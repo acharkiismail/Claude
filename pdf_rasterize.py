@@ -54,11 +54,20 @@ def rasterize_pdf(input_file: str, output_file: str, dpi: int = 200) -> None:
 
         for page in src:
             pix = page.get_pixmap(matrix=matrix, alpha=False)
+            jpeg_bytes = pix.tobytes("jpeg", jpg_quality=75)
             new_page = out.new_page(width=page.rect.width, height=page.rect.height)
-            new_page.insert_image(new_page.rect, pixmap=pix)
+            new_page.insert_image(new_page.rect, stream=jpeg_bytes)
 
-        out.save(str(output_path))
+        out.save(str(output_path), deflate=True)
         page_count = src.page_count
+
+        size_mb = output_path.stat().st_size / (1024 * 1024)
+        if size_mb > 10:
+            sys.stdout.write(
+                f"WARNING|message=file_size_exceeded|size_mb={size_mb:.1f}|output={output_path}|pages={page_count}\n"
+            )
+            sys.stdout.flush()
+            sys.exit(0)
 
     except Exception as e:
         sys.stdout.write(f"ERROR|message=conversion_failed|detail={e}\n")
