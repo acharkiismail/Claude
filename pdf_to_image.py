@@ -87,8 +87,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="Convertit toutes les pages d'un PDF en une seule image"
     )
-    parser.add_argument("input_file", help="Chemin du fichier PDF")
-    parser.add_argument("output_file", help="Chemin du fichier image de sortie (.jpg ou .png)")
+    parser.add_argument("--input-file", required=True, help="Chemin du fichier PDF")
+    parser.add_argument("--output-file", required=True, help="Chemin du fichier image de sortie (.jpg ou .png)")
 
     args = parser.parse_args()
     pdf_to_image(args.input_file, args.output_file)
