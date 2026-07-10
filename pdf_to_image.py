@@ -3,9 +3,13 @@ import sys
 import os
 from pathlib import Path
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "libs"))
-
-import fitz  # PyMuPDF
+try:
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "libs"))
+    import fitz  # PyMuPDF
+except Exception as _e:
+    sys.stdout.write(f"ERROR|message=import_failed|detail={_e}\n")
+    sys.stdout.flush()
+    sys.exit(1)
 
 
 def pdf_to_image(input_file: str, output_file: str) -> None:
