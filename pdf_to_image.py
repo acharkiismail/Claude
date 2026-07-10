@@ -22,9 +22,10 @@ def pdf_to_image(input_file: str, output_file: str) -> None:
         sys.stdout.flush()
         sys.exit(1)
 
-    ext = output_path.suffix.lower()
-    if ext not in (".jpg", ".jpeg", ".png"):
-        sys.stdout.write(f"ERROR|message=unsupported_output_format|ext={ext}|supported=.jpg,.jpeg,.png\n")
+    if output_path.suffix.lower() not in (".jpg", ".jpeg", ".png"):
+        sys.stdout.write(
+            f"ERROR|message=unsupported_output_format|ext={output_path.suffix}|supported=.jpg,.jpeg,.png\n"
+        )
         sys.stdout.flush()
         sys.exit(1)
 
@@ -48,9 +49,28 @@ def pdf_to_image(input_file: str, output_file: str) -> None:
             sys.stdout.flush()
             sys.exit(1)
 
-        page = doc[0]
-        pixmap = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
-        pixmap.save(str(output_path))
+        matrix = fitz.Matrix(2, 2)
+        pixmaps = [doc[i].get_pixmap(matrix=matrix, alpha=False) for i in range(doc.page_count)]
+
+        # Colle toutes les pages verticalement en un seul bloc de pixels
+        max_width = max(p.width for p in pixmaps)
+        total_height = sum(p.height for p in pixmaps)
+        n = 3  # RGB, pas d'alpha
+
+        samples = bytearray()
+        white_row_padding = bytes([255, 255, 255])
+        for pix in pixmaps:
+            if pix.width == max_width:
+                samples += pix.samples
+            else:
+                padding = white_row_padding * (max_width - pix.width)
+                for y in range(pix.height):
+                    samples += pix.samples[y * pix.width * n : (y + 1) * pix.width * n]
+                    samples += padding
+
+        combined = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, max_width, total_height), bytes(samples))
+        combined.save(str(output_path))
+
     except Exception as e:
         sys.stdout.write(f"ERROR|message=conversion_failed|detail={e}\n")
         sys.stdout.flush()
@@ -58,14 +78,14 @@ def pdf_to_image(input_file: str, output_file: str) -> None:
     finally:
         doc.close()
 
-    sys.stdout.write(f"ok|output={output_path}\n")
+    sys.stdout.write(f"ok|output={output_path}|pages={len(pixmaps)}\n")
     sys.stdout.flush()
     sys.exit(0)
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Convertit la première page d'un PDF en image"
+        description="Convertit toutes les pages d'un PDF en une seule image"
     )
     parser.add_argument("--input-file", required=True, help="Chemin du fichier PDF")
     parser.add_argument("--output-file", required=True, help="Chemin du fichier image de sortie (.jpg ou .png)")
