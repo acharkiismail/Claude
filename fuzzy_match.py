@@ -1,17 +1,16 @@
 import argparse
 import sys
 import os
+import re
 
 try:
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "libs"))
     from rapidfuzz import fuzz as _fuzz
     def _score(keyword, text):
-        return _fuzz.partial_ratio(keyword.lower(), text.lower())
+        return _fuzz.partial_ratio(keyword, text)
 except Exception:
     import difflib
     def _score(keyword, text):
-        keyword = keyword.lower()
-        text = text.lower()
         klen = len(keyword)
         if klen == 0:
             return 100.0
@@ -25,7 +24,19 @@ except Exception:
         return best
 
 
+def normalize(s: str) -> str:
+    s = s.lower()
+    s = re.sub(r"[^\w\s]", " ", s)   # remplace ponctuation et tirets par espace
+    s = " ".join(s.split())           # normalise les espaces multiples
+    return s
+
+
 def fuzzy_match(text: str, keyword: str, threshold: int) -> None:
+    if not 0 <= threshold <= 100:
+        sys.stdout.write(f"ERROR|message=invalid_threshold|value={threshold}|expected=0-100\n")
+        sys.stdout.flush()
+        sys.exit(1)
+
     if not keyword.strip():
         sys.stdout.write("ERROR|message=keyword_is_empty\n")
         sys.stdout.flush()
@@ -36,7 +47,10 @@ def fuzzy_match(text: str, keyword: str, threshold: int) -> None:
         sys.stdout.flush()
         sys.exit(1)
 
-    score = round(_score(keyword, text), 1)
+    keyword_norm = normalize(keyword)
+    text_norm = normalize(text)
+
+    score = round(_score(keyword_norm, text_norm), 1)
     found = score >= threshold
 
     sys.stdout.write(f"ok|score={score}|found={'true' if found else 'false'}|threshold={threshold}\n")
@@ -50,7 +64,7 @@ def main():
     )
     parser.add_argument("--text", required=True, help="Texte dans lequel chercher")
     parser.add_argument("--keyword", required=True, help="Mot ou phrase à rechercher")
-    parser.add_argument("--threshold", type=int, required=True, help="Score minimum pour considérer trouvé (ex: 80)")
+    parser.add_argument("--threshold", type=int, required=True, help="Score minimum pour considérer trouvé (0-100)")
 
     args = parser.parse_args()
     fuzzy_match(args.text, args.keyword, args.threshold)
