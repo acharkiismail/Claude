@@ -50,7 +50,7 @@ def main():
     )
     parser.add_argument("--text", required=True, help="Texte dans lequel chercher")
     parser.add_argument("--keyword", required=True, help="Mot ou phrase à rechercher")
-    parser.add_argument("--threshold", type=int, default=80, help="Score minimum pour considérer trouvé (défaut: 80)")
+    parser.add_argument("--threshold", type=int, required=True, help="Score minimum pour considérer trouvé (ex: 80)")
 
     args = parser.parse_args()
     fuzzy_match(args.text, args.keyword, args.threshold)
