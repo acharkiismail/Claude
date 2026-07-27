@@ -12,10 +12,14 @@ except Exception as _e:
     sys.exit(1)
 
 
-def get_occupied_bands(page, merge_tolerance: float = 1.0, bg_threshold: float = 0.95) -> list:
-    """Zones Y occupées par du texte ou des formes (hors arrière-plan plein écran),
-    fusionnées en bandes continues : ce sont les seules frontières où couper sans
-    trancher une ligne de texte ou une rangée de tableau."""
+def get_occupied_bands(page, merge_tolerance: float = 1.0, bg_threshold: float = 0.95,
+                        shape_height_ratio: float = 0.3) -> list:
+    """Zones Y occupées par du texte ou des formes (hors arrière-plan plein écran et
+    hors grands cadres/bordures), fusionnées en bandes continues : ce sont les seules
+    frontières où couper sans trancher une ligne de texte ou une rangée de tableau.
+    Une grande forme (ex: le cadre d'un tableau) n'est pas du contenu ligne par ligne :
+    la traiter comme une bande empêcherait toute coupe sur sa hauteur, donc on ignore
+    les formes qui dépassent shape_height_ratio de la hauteur de la page."""
     page_w, page_h = page.rect.width, page.rect.height
     intervals = []
 
@@ -30,7 +34,8 @@ def get_occupied_bands(page, merge_tolerance: float = 1.0, bg_threshold: float =
         if r.height <= 0:
             continue
         is_full_page_bg = (r.width >= bg_threshold * page_w and r.height >= bg_threshold * page_h)
-        if is_full_page_bg:
+        is_oversized_shape = r.height >= shape_height_ratio * page_h
+        if is_full_page_bg or is_oversized_shape:
             continue
         intervals.append((r.y0, r.y1))
 
