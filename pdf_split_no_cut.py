@@ -105,9 +105,21 @@ def split_pdf_no_cut(input_file: str, output_dir: str, parts_per_page: int = 4, 
             raw_cuts = [h * k / parts_per_page for k in range(parts_per_page + 1)]
             # Les bords (0 et h) restent fixes, seules les coupes internes sont ajustées
             # pour tomber entre deux bandes occupées plutôt qu'au milieu d'une ligne
-            cuts = [0.0] + [find_safe_cut(c, bands, h) for c in raw_cuts[1:-1]] + [h]
+            candidates = [0.0] + [find_safe_cut(c, bands, h) for c in raw_cuts[1:-1]] + [h]
 
-            for k in range(parts_per_page):
+            # Si une bande de contenu couvre plusieurs coupes théoriques (tableau dense,
+            # sans espace vide), find_safe_cut les ramène toutes vers la même frontière :
+            # on ne garde que les coupes strictement croissantes pour éviter un rectangle
+            # de hauteur nulle (page produira alors moins de parts_per_page bandes)
+            cuts = [candidates[0]]
+            for c in candidates[1:]:
+                c = min(max(c, 0.0), h)
+                if c > cuts[-1] + 1e-6:
+                    cuts.append(c)
+            if cuts[-1] < h:
+                cuts.append(h)
+
+            for k in range(len(cuts) - 1):
                 y0, y1 = cuts[k], cuts[k + 1]
                 clip = fitz.Rect(0, y0, w, y1)
                 base_name = f"page{page_idx + 1}_part{k + 1}"
