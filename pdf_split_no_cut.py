@@ -65,7 +65,7 @@ def find_safe_cut(target_y: float, bands: list, page_height: float) -> float:
     return target_y
 
 
-def split_pdf_no_cut(input_file: str, output_dir: str, parts_per_page: int = 4, dpi: int = 200) -> None:
+def split_pdf_no_cut(input_file: str, output_dir: str, parts_per_page: int = 4) -> None:
     input_path = Path(input_file)
 
     if not input_path.is_file():
@@ -136,11 +136,6 @@ def split_pdf_no_cut(input_file: str, output_dir: str, parts_per_page: int = 4, 
                 new_doc.save(str(output_path / f"{base_name}.pdf"))
                 new_doc.close()
 
-                # Export PNG (pratique pour envoyer directement à un LLM en vision)
-                mat = fitz.Matrix(dpi / 72, dpi / 72)
-                pix = page.get_pixmap(matrix=mat, clip=clip)
-                pix.save(str(output_path / f"{base_name}.png"))
-
                 part_count += 1
 
         page_count = doc.page_count
@@ -164,12 +159,11 @@ def main():
                      "une ligne de texte ou une rangee de tableau"
     )
     parser.add_argument("--input-file", required=True, help="Chemin du PDF à découper")
-    parser.add_argument("--output-dir", required=True, help="Dossier de sortie pour les bandes PDF/PNG")
+    parser.add_argument("--output-dir", required=True, help="Dossier de sortie pour les bandes PDF")
     parser.add_argument("--parts-per-page", type=int, default=4, help="Nombre de bandes par page (défaut: 4)")
-    parser.add_argument("--dpi", type=int, default=200, help="Résolution des PNG exportés (défaut: 200)")
 
     args = parser.parse_args()
-    split_pdf_no_cut(args.input_file, args.output_dir, args.parts_per_page, args.dpi)
+    split_pdf_no_cut(args.input_file, args.output_dir, args.parts_per_page)
 
 
 if __name__ == "__main__":
