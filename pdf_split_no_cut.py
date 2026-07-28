@@ -65,7 +65,23 @@ def find_safe_cut(target_y: float, bands: list, page_height: float) -> float:
     return target_y
 
 
-def split_pdf_no_cut(input_file: str, output_dir: str, parts_per_page: int = 4) -> None:
+def get_header_clip(page_height: float, page_width: float, header_y_percent: float,
+                     header_buffer: float, header_height: float) -> "fitz.Rect":
+    """Reproduit le calcul de zone d'en-tete du script VB.NET d'origine : on vise
+    une position en pourcentage de la hauteur de page, on remonte d'une marge fixe
+    (header_buffer), puis on prend une hauteur fixe (header_height), rabotee si elle
+    depasserait le bas de la page."""
+    raw_target_y = page_height * header_y_percent
+    target_y = max(0.0, raw_target_y - header_buffer)
+    hh = header_height
+    if target_y + hh > page_height:
+        hh = page_height - target_y
+    return fitz.Rect(0, target_y, page_width, target_y + hh)
+
+
+def split_pdf_no_cut(input_file: str, output_dir: str, parts_per_page: int = 4,
+                      repeat_header: bool = False, header_y_percent: float = 0.12,
+                      header_buffer: float = 20.0, header_height: float = 100.0) -> None:
     input_path = Path(input_file)
 
     if not input_path.is_file():
@@ -102,6 +118,14 @@ def split_pdf_no_cut(input_file: str, output_dir: str, parts_per_page: int = 4) 
             sys.stdout.flush()
             sys.exit(1)
 
+        # En-tete mis en cache une seule fois (page ou il a ete capture + zone), puis
+        # redessine au-dessus de toutes les parts suivantes -- sauf la toute premiere,
+        # qui contient deja l'en-tete reel puisqu'elle commence en haut de la page 1
+        cached_header_page_idx = None
+        cached_header_clip = None
+        cached_header_height = 0.0
+        is_first_part = True
+
         for page_idx, page in enumerate(doc):
             h, w = page.rect.height, page.rect.width
             bands = get_occupied_bands(page)
@@ -124,15 +148,35 @@ def split_pdf_no_cut(input_file: str, output_dir: str, parts_per_page: int = 4) 
             if cuts[-1] < h:
                 cuts.append(h)
 
+            if repeat_header and cached_header_clip is None:
+                cached_header_page_idx = page_idx
+                cached_header_clip = get_header_clip(h, w, header_y_percent, header_buffer, header_height)
+                cached_header_height = cached_header_clip.height
+
             for k in range(len(cuts) - 1):
                 y0, y1 = cuts[k], cuts[k + 1]
                 clip = fitz.Rect(0, y0, w, y1)
                 base_name = f"page{page_idx + 1}_part{k + 1}"
 
+                attach_header = repeat_header and not is_first_part
+                is_first_part = False
+
                 # Export PDF (page recadrée, garde le texte sélectionnable)
                 new_doc = fitz.open()
-                new_page = new_doc.new_page(width=w, height=y1 - y0)
-                new_page.show_pdf_page(new_page.rect, doc, page_idx, clip=clip)
+                if attach_header:
+                    total_h = cached_header_height + (y1 - y0)
+                    new_page = new_doc.new_page(width=w, height=total_h)
+                    new_page.show_pdf_page(
+                        fitz.Rect(0, 0, w, cached_header_height),
+                        doc, cached_header_page_idx, clip=cached_header_clip,
+                    )
+                    new_page.show_pdf_page(
+                        fitz.Rect(0, cached_header_height, w, total_h),
+                        doc, page_idx, clip=clip,
+                    )
+                else:
+                    new_page = new_doc.new_page(width=w, height=y1 - y0)
+                    new_page.show_pdf_page(new_page.rect, doc, page_idx, clip=clip)
                 new_doc.save(str(output_path / f"{base_name}.pdf"))
                 new_doc.close()
 
@@ -161,9 +205,19 @@ def main():
     parser.add_argument("--input-file", required=True, help="Chemin du PDF à découper")
     parser.add_argument("--output-dir", required=True, help="Dossier de sortie pour les bandes PDF")
     parser.add_argument("--parts-per-page", type=int, default=4, help="Nombre de bandes par page (défaut: 4)")
+    parser.add_argument("--repeat-header", action="store_true",
+                         help="Capture l'en-tete une fois (1ere part traitee) et le recolle "
+                              "au-dessus de toutes les parts suivantes")
+    parser.add_argument("--header-y-percent", type=float, default=0.12,
+                         help="Position verticale visee pour l'en-tete, en %% de la hauteur de page (défaut: 0.12)")
+    parser.add_argument("--header-buffer", type=float, default=20.0,
+                         help="Marge remontee depuis header-y-percent, en points PDF (défaut: 20)")
+    parser.add_argument("--header-height", type=float, default=100.0,
+                         help="Hauteur de la zone d'en-tete capturee, en points PDF (défaut: 100)")
 
     args = parser.parse_args()
-    split_pdf_no_cut(args.input_file, args.output_dir, args.parts_per_page)
+    split_pdf_no_cut(args.input_file, args.output_dir, args.parts_per_page,
+                      args.repeat_header, args.header_y_percent, args.header_buffer, args.header_height)
 
 
 if __name__ == "__main__":
