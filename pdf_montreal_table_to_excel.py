@@ -32,8 +32,8 @@ CLUSTER_TO_CHAR = {
     1: 'O', 0: 'N', 30: '8', 9: 'S', 7: 'T', 4: 'C', 17: 'U', 23: 'R', 40: ',', 10: 'I', 2: 'D', 44: '-',
     50: 'E', 14: 'I', 41: '8', 18: 'B', 47: 'A', 5: 'M', 31: '-', 52: 'N', 59: 'I', 36: 'V', 37: 'H', 6: 'P',
     11: 'G', 90: '-', 61: '3', 43: '1', 91: '#', 56: 'Y', 74: 'Q', 38: 'R', 76: 'K', 65: 'N', 53: '6', 58: 'F',
-    19: 'J', 70: 'B', 57: '.', 55: 'D', 87: '#', 13: 'T', 62: 'W', 48: 'X', 45: 'U', 93: 'S', 105: 'V', 72: '0',
-    83: 'J', 66: 'H', 49: '2', 54: 'R', 92: '#', 77: 'Z', 84: 'W', 51: 'M', 69: ',', 21: 'S', 46: 'V', 78: 'O',
+    19: '.', 70: 'B', 57: '.', 55: 'D', 87: '#', 13: 'T', 62: 'W', 48: 'X', 45: 'U', 93: 'S', 105: 'V', 72: '0',
+    83: 'J', 66: 'H', 49: '2', 54: 'R', 92: '-', 77: 'Z', 84: 'W', 51: 'M', 69: ',', 21: 'S', 46: 'V', 78: 'O',
     86: '9', 68: '6', 39: 'M', 81: '4', 60: 'M', 75: '.', 67: '.', 8: 'E', 106: '.', 79: 'A', 122: '.', 71: '4',
     96: 'Y', 94: 'J', 121: 'B', 16: ',', 24: 'T', 89: 'E', 82: 'H', 88: 'A', 98: '#', 22: ')', 20: '(', 97: 'Y',
     63: 'A', 25: 'E', 85: ',', 108: 'Q', 64: 'A', 116: '.', 73: '0', 80: ',', 99: '7', 114: '#', 109: 'O', 110: 'N',
@@ -49,16 +49,24 @@ LEFT_COLUMNS = [
     ("NO_COMPTE", 150, 232),
     ("DESIGNATION", 232, 335),
     ("CAD_LOT", 335, 420),
-    ("PROPRIETAIRE", 420, 540),
-    ("MONTANT", 540, 600),
 ]
 RIGHT_COLUMNS = [
     ("NO_COMPTE", 600, 646),
     ("DESIGNATION", 646, 750),
     ("CAD_LOT", 750, 835),
-    ("PROPRIETAIRE", 835, 935),
-    ("MONTANT", 935, 1190),
 ]
+# PROPRIETAIRE et MONTANT n'ont pas de largeur fixe fiable : un nom long ("... ET AL",
+# "... INC.") deborde d'une frontiere fixe selon sa longueur. On prend plutot toute la
+# plage combinee et on coupe au plus grand espace trouve (le vrai espace entre le nom et
+# le montant est toujours nettement plus large que les espaces entre mots du nom).
+LEFT_PROP_MONTANT_RANGE = (420, 600)
+RIGHT_PROP_MONTANT_RANGE = (835, 1190)
+
+# Champs qui doivent etre purement numeriques (+tiret) : O/0 sont visuellement
+# impossibles a distinguer par la forme dans cette police, donc un O ici est presque
+# certainement un 0 mal identifie
+NUMERIC_FIELDS = {"NO_COMPTE", "CAD_LOT"}
+LOOKALIKE_FIX = {"O": "0"}
 
 NO_COMPTE_RE = re.compile(r"^\d{6}-\d{2}$")
 MONTANT_RE = re.compile(r"^\d{1,3}(?: \d{3})* ?[.,]\d{2}$")
@@ -201,10 +209,36 @@ def build_table(input_file: str, first_page: int, last_page: int):
         left_rows = group_into_rows(left_chars)
         right_rows = group_into_rows(right_chars)
 
-        for block, columns in list(zip(
-            [sorted(r, key=lambda w: w["x0"]) for r in left_rows], [LEFT_COLUMNS] * len(left_rows)
+        def chars_to_text(chars_sorted):
+            out = []
+            prev_x1 = None
+            for c in chars_sorted:
+                if prev_x1 is not None and c["x0"] - prev_x1 > 1.8:
+                    out.append(" ")
+                out.append(c["ch"])
+                prev_x1 = c["x1"]
+            return "".join(out).strip()
+
+        def split_prop_montant(chars_in_range):
+            """Coupe au plus grand espace entre deux caracteres consecutifs :
+            c'est toujours la frontiere nom/montant, plus large que les espaces
+            internes du nom (ET AL, INC., etc)."""
+            chars_sorted = sorted(chars_in_range, key=lambda w: w["x0"])
+            if not chars_sorted:
+                return [], []
+            best_gap, best_i = -1, len(chars_sorted)
+            for i in range(1, len(chars_sorted)):
+                gap = chars_sorted[i]["x0"] - chars_sorted[i - 1]["x1"]
+                if gap > best_gap:
+                    best_gap, best_i = gap, i
+            return chars_sorted[:best_i], chars_sorted[best_i:]
+
+        for block, columns, prop_montant_range in list(zip(
+            [sorted(r, key=lambda w: w["x0"]) for r in left_rows], [LEFT_COLUMNS] * len(left_rows),
+            [LEFT_PROP_MONTANT_RANGE] * len(left_rows)
         )) + list(zip(
-            [sorted(r, key=lambda w: w["x0"]) for r in right_rows], [RIGHT_COLUMNS] * len(right_rows)
+            [sorted(r, key=lambda w: w["x0"]) for r in right_rows], [RIGHT_COLUMNS] * len(right_rows),
+            [RIGHT_PROP_MONTANT_RANGE] * len(right_rows)
         )):
                 if not block:
                     continue
@@ -214,23 +248,26 @@ def build_table(input_file: str, first_page: int, last_page: int):
                         if xmin <= c["x0"] < xmax:
                             fields[name].append(c)
                             break
+
                 record = {}
                 for name, _, _ in columns:
-                    chars_sorted = sorted(fields[name], key=lambda w: w["x0"])
-                    out = []
-                    prev_x1 = None
-                    for c in chars_sorted:
-                        if prev_x1 is not None and c["x0"] - prev_x1 > 1.8:
-                            out.append(" ")
-                        out.append(c["ch"])
-                        prev_x1 = c["x1"]
-                    record[name] = "".join(out).strip()
+                    record[name] = chars_to_text(sorted(fields[name], key=lambda w: w["x0"]))
+
+                pm_min, pm_max = prop_montant_range
+                pm_chars = [c for c in block if pm_min <= c["x0"] < pm_max]
+                prop_chars, montant_chars = split_prop_montant(pm_chars)
+                record["PROPRIETAIRE"] = chars_to_text(prop_chars)
+                record["MONTANT"] = chars_to_text(montant_chars)
 
                 total_len = sum(len(v) for v in record.values())
                 if total_len < 5:
                     continue  # bruit residuel (virgule/marque isolee), pas une vraie ligne
                 if record["NO_COMPTE"].upper().replace(",", "").strip() in HEADER_WORDS:
                     continue  # ligne d'en-tete de colonnes, pas une donnee
+
+                for name in NUMERIC_FIELDS:
+                    for bad, good in LOOKALIKE_FIX.items():
+                        record[name] = record[name].replace(bad, good)
 
                 x0_ref = block[0]["x0"]
                 y0_ref = block[0]["ycenter"]
