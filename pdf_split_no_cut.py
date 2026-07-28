@@ -65,13 +65,36 @@ def find_safe_cut(target_y: float, bands: list, page_height: float) -> float:
     return target_y
 
 
+def find_header_rule_y(page, min_width_ratio: float = 0.5, max_line_height: float = 3.0) -> float:
+    """Detecte la ligne de separation (regle horizontale fine et large) qui marque la
+    fin de l'en-tete : dans ce genre de tableau, une seule ligne de ce type se trouve
+    juste sous la rangee des titres de colonnes (les autres, plus haut, separent le
+    bandeau/logo). On prend la plus basse trouvee sur la page -- s'il y a plusieurs
+    lignes candidates, celle du bas est toujours la bonne frontiere avant les donnees.
+    Retourne None si aucune ligne de ce type n'est trouvee."""
+    page_w = page.rect.width
+    candidates = [
+        d["rect"] for d in page.get_drawings()
+        if d["rect"].width >= min_width_ratio * page_w and d["rect"].height <= max_line_height
+    ]
+    if not candidates:
+        return None
+    return max(r.y1 for r in candidates)
+
+
 def get_header_clip(page, header_y_percent: float) -> "fitz.Rect":
-    """En-tete = du tout haut de la page (y=0) jusqu'a la fin de la rangee de texte
-    visee par header_y_percent (ex: la ligne des titres de colonnes 'NO DE COMPTE /
-    DESIGNATION DE L'IMMEUBLE / ...'). header_y_percent doit tomber n'importe ou DANS
-    cette rangee : on etend ensuite jusqu'a la fin reelle de son bloc de contenu, pour
-    ne jamais couper cette ligne en plein milieu ni s'arreter juste avant sa fin."""
+    """En-tete = du tout haut de la page (y=0) jusqu'a la fin de la rangee des titres
+    de colonnes. On detecte cette frontiere d'abord via la ligne de separation
+    structurelle (find_header_rule_y, fiable car basee sur le document lui-meme).
+    Si aucune ligne de ce type n'existe (mise en page differente), on retombe sur
+    header_y_percent : une position qui doit tomber n'importe ou dans la rangee des
+    titres, etendue jusqu'a la fin reelle de son bloc de contenu."""
     h, w = page.rect.height, page.rect.width
+
+    rule_y = find_header_rule_y(page)
+    if rule_y is not None:
+        return fitz.Rect(0, 0, w, rule_y)
+
     bands = get_occupied_bands(page)
     target_y = h * header_y_percent
     bottom = target_y
