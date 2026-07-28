@@ -65,23 +65,26 @@ def find_safe_cut(target_y: float, bands: list, page_height: float) -> float:
     return target_y
 
 
-def get_header_clip(page_height: float, page_width: float, header_y_percent: float,
-                     header_buffer: float, header_height: float) -> "fitz.Rect":
-    """Reproduit le calcul de zone d'en-tete du script VB.NET d'origine : on vise
-    une position en pourcentage de la hauteur de page, on remonte d'une marge fixe
-    (header_buffer), puis on prend une hauteur fixe (header_height), rabotee si elle
-    depasserait le bas de la page."""
-    raw_target_y = page_height * header_y_percent
-    target_y = max(0.0, raw_target_y - header_buffer)
-    hh = header_height
-    if target_y + hh > page_height:
-        hh = page_height - target_y
-    return fitz.Rect(0, target_y, page_width, target_y + hh)
+def get_header_clip(page, header_y_percent: float) -> "fitz.Rect":
+    """En-tete = du tout haut de la page (y=0) jusqu'a la fin de la rangee de texte
+    visee par header_y_percent (ex: la ligne des titres de colonnes 'NO DE COMPTE /
+    DESIGNATION DE L'IMMEUBLE / ...'). header_y_percent doit tomber n'importe ou DANS
+    cette rangee : on etend ensuite jusqu'a la fin reelle de son bloc de contenu, pour
+    ne jamais couper cette ligne en plein milieu ni s'arreter juste avant sa fin."""
+    h, w = page.rect.height, page.rect.width
+    bands = get_occupied_bands(page)
+    target_y = h * header_y_percent
+    bottom = target_y
+    for y0, y1 in bands:
+        if y0 <= target_y <= y1:
+            bottom = y1
+            break
+    return fitz.Rect(0, 0, w, bottom)
 
 
 def split_pdf_no_cut(input_file: str, output_dir: str, parts_per_page: int = 4,
-                      repeat_header: bool = False, header_y_percent: float = 0.12,
-                      header_buffer: float = 20.0, header_height: float = 100.0) -> None:
+                      repeat_header: bool = False, header_page_index: int = 1,
+                      header_y_percent: float = 0.12) -> None:
     input_path = Path(input_file)
 
     if not input_path.is_file():
@@ -118,13 +121,21 @@ def split_pdf_no_cut(input_file: str, output_dir: str, parts_per_page: int = 4,
             sys.stdout.flush()
             sys.exit(1)
 
-        # En-tete mis en cache une seule fois (page ou il a ete capture + zone), puis
-        # redessine au-dessus de toutes les parts suivantes -- sauf la toute premiere,
-        # qui contient deja l'en-tete reel puisqu'elle commence en haut de la page 1
+        # En-tete capture une seule fois, depuis une page de reference explicite
+        # (header_page_index, 0-indexee), puis redessine au-dessus de toutes les
+        # parts suivantes -- sauf la toute premiere part de cette page de reference,
+        # qui contient deja l'en-tete reel puisqu'elle commence en haut de la page
         cached_header_page_idx = None
         cached_header_clip = None
         cached_header_height = 0.0
-        is_first_part = True
+        if repeat_header:
+            if not (0 <= header_page_index < doc.page_count):
+                sys.stdout.write(f"ERROR|message=invalid_header_page_index|value={header_page_index}|page_count={doc.page_count}\n")
+                sys.stdout.flush()
+                sys.exit(1)
+            cached_header_page_idx = header_page_index
+            cached_header_clip = get_header_clip(doc[header_page_index], header_y_percent)
+            cached_header_height = cached_header_clip.height
 
         for page_idx, page in enumerate(doc):
             h, w = page.rect.height, page.rect.width
@@ -148,18 +159,14 @@ def split_pdf_no_cut(input_file: str, output_dir: str, parts_per_page: int = 4,
             if cuts[-1] < h:
                 cuts.append(h)
 
-            if repeat_header and cached_header_clip is None:
-                cached_header_page_idx = page_idx
-                cached_header_clip = get_header_clip(h, w, header_y_percent, header_buffer, header_height)
-                cached_header_height = cached_header_clip.height
-
             for k in range(len(cuts) - 1):
                 y0, y1 = cuts[k], cuts[k + 1]
                 clip = fitz.Rect(0, y0, w, y1)
                 base_name = f"page{page_idx + 1}_part{k + 1}"
 
-                attach_header = repeat_header and not is_first_part
-                is_first_part = False
+                # La toute premiere part de la page de reference contient deja l'en-tete
+                # reel (elle part du haut de cette page) -> pas besoin de le recoller dessus
+                attach_header = repeat_header and not (page_idx == cached_header_page_idx and k == 0)
 
                 # Export PDF (page recadrée, garde le texte sélectionnable)
                 new_doc = fitz.open()
@@ -206,18 +213,18 @@ def main():
     parser.add_argument("--output-dir", required=True, help="Dossier de sortie pour les bandes PDF")
     parser.add_argument("--parts-per-page", type=int, default=4, help="Nombre de bandes par page (défaut: 4)")
     parser.add_argument("--repeat-header", action="store_true",
-                         help="Capture l'en-tete une fois (1ere part traitee) et le recolle "
-                              "au-dessus de toutes les parts suivantes")
+                         help="Capture l'en-tete une fois sur header-page-index et le recolle "
+                              "au-dessus de toutes les autres parts")
+    parser.add_argument("--header-page-index", type=int, default=1,
+                         help="Page de reference pour l'en-tete, 0-indexee (défaut: 1 = la 2e page)")
     parser.add_argument("--header-y-percent", type=float, default=0.12,
-                         help="Position verticale visee pour l'en-tete, en %% de la hauteur de page (défaut: 0.12)")
-    parser.add_argument("--header-buffer", type=float, default=20.0,
-                         help="Marge remontee depuis header-y-percent, en points PDF (défaut: 20)")
-    parser.add_argument("--header-height", type=float, default=100.0,
-                         help="Hauteur de la zone d'en-tete capturee, en points PDF (défaut: 100)")
+                         help="Position (en %% de la hauteur de page) qui doit tomber n'importe ou "
+                              "dans la ligne des titres de colonnes -- l'en-tete est etendu "
+                              "automatiquement jusqu'a la fin reelle de cette ligne (défaut: 0.12)")
 
     args = parser.parse_args()
     split_pdf_no_cut(args.input_file, args.output_dir, args.parts_per_page,
-                      args.repeat_header, args.header_y_percent, args.header_buffer, args.header_height)
+                      args.repeat_header, args.header_page_index, args.header_y_percent)
 
 
 if __name__ == "__main__":
