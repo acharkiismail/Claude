@@ -117,6 +117,65 @@ def try_delete_file(path: str):
 
 
 # ============================================================
+# MASTER FILE (accumulation journée + fusion incrémentale)
+# ============================================================
+
+def load_master(master_path: str):
+    """Retourne les lignes du maître si elles datent d'aujourd'hui (Toronto), sinon repart à vide."""
+    if not master_path or not os.path.exists(master_path):
+        return []
+    try:
+        with open(master_path, "r", encoding="utf-8-sig") as f:
+            data = _safe_load_json_text(f.read())
+    except Exception:
+        return []
+    if not isinstance(data, dict):
+        return []
+    if data.get("date") != today_toronto_str():
+        return []
+    rows = data.get("rows")
+    return rows if isinstance(rows, list) else []
+
+
+def merge_into_master(master_path: str, new_rows: list, key_col: str):
+    """Upsert new_rows (lot incrémental, ex. dernière heure) dans le fichier maître
+    (journée complète) en se basant sur key_col, puis persiste et renvoie le résultat.
+    Les lignes sans key_col renseigné sont simplement ajoutées (pas de dédoublonnage possible)."""
+    master_rows = load_master(master_path)
+
+    by_key = {}
+    ordered_keys = []
+    unkeyed = []
+    for r in master_rows:
+        if not isinstance(r, dict):
+            continue
+        k = str(r.get(key_col)).strip() if key_col else ""
+        if k:
+            if k not in by_key:
+                ordered_keys.append(k)
+            by_key[k] = r
+        else:
+            unkeyed.append(r)
+
+    for r in new_rows:
+        if not isinstance(r, dict):
+            continue
+        k = str(r.get(key_col)).strip() if key_col else ""
+        if k:
+            if k not in by_key:
+                ordered_keys.append(k)
+            by_key[k] = r
+        else:
+            unkeyed.append(r)
+
+    merged = [by_key[k] for k in ordered_keys] + unkeyed
+
+    master_content = json.dumps({"date": today_toronto_str(), "rows": merged}, ensure_ascii=False)
+    safe_write(master_path, master_content)
+    return merged
+
+
+# ============================================================
 # HELPERS
 # ============================================================
 
@@ -184,6 +243,12 @@ def pretty_iso_to_toronto(s) -> str:
     dt_utc = dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt.astimezone(timezone.utc)
     dt_local = dt_utc.astimezone(TORONTO_TZ) if TORONTO_TZ else utc_to_toronto_fallback(dt_utc)
     return dt_local.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def today_toronto_str() -> str:
+    dt_utc = datetime.now(timezone.utc)
+    dt_local = dt_utc.astimezone(TORONTO_TZ) if TORONTO_TZ else utc_to_toronto_fallback(dt_utc)
+    return dt_local.strftime("%Y-%m-%d")
 
 
 # ============================================================
@@ -720,8 +785,13 @@ def build_html_table(rows, cols, title, default_sort_col, default_sort_desc,
 # ============================================================
 
 def run_build(input_json, output_html, title, sort_col, sort_desc,
-              exception_col, completed_col, locks_json):
-    rows       = read_rows(input_json)
+              exception_col, completed_col, locks_json,
+              master_json="", key_col=""):
+    rows = read_rows(input_json)
+
+    if master_json:
+        rows = merge_into_master(master_json, rows, key_col)
+
     locked_set = read_locked_set(locks_json)
     rows       = sort_rows_in_python(rows, sort_col, sort_desc,
                                      exception_col=exception_col,
@@ -754,9 +824,15 @@ def main():
     ap.add_argument("--exception_col", default="")
     ap.add_argument("--completed_col", default="")
     ap.add_argument("--locks_json",    default="")
+    ap.add_argument("--master_json",   default="", help="Fichier persistant qui accumule la journée; --input_json ne fournit alors qu'un lot incrémental (ex. dernière heure)")
+    ap.add_argument("--key_col",       default="", help="Colonne identifiant unique un cas, requise si --master_json est utilisé")
     args = ap.parse_args()
 
     sort_desc = str(args.sort_desc).strip().lower() in ("true", "1", "yes", "y")
+
+    if args.master_json and not args.key_col:
+        print("ERROR: --key_col est requis quand --master_json est utilisé", file=sys.stderr)
+        sys.exit(1)
 
     try:
         run_build(
@@ -768,6 +844,8 @@ def main():
             exception_col=args.exception_col,
             completed_col=args.completed_col,
             locks_json=args.locks_json,
+            master_json=args.master_json,
+            key_col=args.key_col,
         )
         print(f"SUCCESS: HTML generated -> {args.output_html}")
         sys.exit(0)
