@@ -495,6 +495,17 @@ def _build_js(page_size, default_sort_col_js, default_sort_desc_js, refresh_seco
         "    .findIndex(th => (th.textContent || '').trim().startsWith(name));\n"
         "}\n"
         "\n"
+        # Affiche juste la flèche de tri sans réordonner le DOM : l'ordre initial
+        # (verrouillés en tête) vient déjà du Python et ne doit pas être écrasé.
+        "function showInitialSortArrow(colIndex, asc) {\n"
+        "  sortState.col = colIndex;\n"
+        "  sortState.asc = asc;\n"
+        "  Array.from(document.querySelector('#table thead tr').cells).forEach((th, i) => {\n"
+        "    const sp = th.querySelector('.arrow'); if (!sp) return;\n"
+        "    sp.textContent = (i === sortState.col) ? (sortState.asc ? '▲' : '▼') : '';\n"
+        "  });\n"
+        "}\n"
+        "\n"
         "window.addEventListener('load', () => {\n"
         "  buildFilterRow();\n"
         "  Array.from(document.querySelector('#table tbody').rows)\n"
@@ -502,7 +513,7 @@ def _build_js(page_size, default_sort_col_js, default_sort_desc_js, refresh_seco
         "  applyAllFilters();\n"
         "  if (DEFAULT_SORT_COLUMN) {\n"
         "    const idx = findColIndex(DEFAULT_SORT_COLUMN);\n"
-        "    if (idx >= 0) sortTable(idx, !DEFAULT_SORT_DESC);\n"
+        "    if (idx >= 0) showInitialSortArrow(idx, !DEFAULT_SORT_DESC);\n"
         "  }\n"
         "});\n"
     )
