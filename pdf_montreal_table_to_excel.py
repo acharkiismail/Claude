@@ -32,7 +32,7 @@ CLUSTER_TO_CHAR = {
     1: 'O', 0: 'N', 30: '8', 9: 'S', 7: 'T', 4: 'C', 17: 'U', 23: 'R', 40: ',', 10: 'I', 2: 'D', 44: '-',
     50: 'E', 14: 'I', 41: '8', 18: 'B', 47: 'A', 5: 'M', 31: '-', 52: 'N', 59: 'I', 36: 'V', 37: 'H', 6: 'P',
     11: 'G', 90: '-', 61: '3', 43: '1', 91: '#', 56: 'Y', 74: 'Q', 38: 'R', 76: 'K', 65: 'N', 53: '6', 58: 'F',
-    19: '.', 70: 'B', 57: '.', 55: 'D', 87: '#', 13: 'T', 62: 'W', 48: 'X', 45: 'U', 93: 'S', 105: 'V', 72: '0',
+    19: '.', 70: 'B', 57: '.', 55: 'D', 87: '#', 13: 'T', 62: '8', 48: 'X', 45: 'U', 93: '.', 105: 'O', 72: '0',
     83: 'J', 66: 'H', 49: '2', 54: 'R', 92: '-', 77: 'Z', 84: 'W', 51: 'M', 69: ',', 21: 'S', 46: 'V', 78: 'O',
     86: '9', 68: '6', 39: 'M', 81: '4', 60: 'M', 75: '.', 67: '.', 8: 'E', 106: '.', 79: 'A', 122: '.', 71: '4',
     96: 'Y', 94: 'J', 121: 'B', 16: ',', 24: 'T', 89: 'E', 82: 'H', 88: 'A', 98: '#', 22: ')', 20: '(', 97: 'Y',
@@ -65,8 +65,18 @@ RIGHT_PROP_MONTANT_RANGE = (835, 1190)
 # Champs qui doivent etre purement numeriques (+tiret) : O/0 sont visuellement
 # impossibles a distinguer par la forme dans cette police, donc un O ici est presque
 # certainement un 0 mal identifie
-NUMERIC_FIELDS = {"NO_COMPTE", "CAD_LOT"}
+NUMERIC_FIELDS = {"NO_COMPTE", "CAD_LOT", "MONTANT"}
 LOOKALIKE_FIX = {"O": "0"}
+
+# PROPRIETAIRE est presque toujours un nom (rarement de vrais chiffres) : l'ambiguite
+# 0/O joue dans l'autre sens ici (ex: "HABITATI0NS" doit redevenir "HABITATIONS"). On
+# corrige un 0 en O seulement quand il touche une lettre (jamais en plein milieu d'un
+# nombre), pour ne pas casser un vrai chiffre isole dans un nom.
+ZERO_NEAR_LETTER_RE = re.compile(r"(?<=[A-ZÀ-Ÿ])0|0(?=[A-ZÀ-Ÿ])")
+
+# Lignes fantomes issues de rares glyphes vectoriels mal isoles (artefact de rendu,
+# pas une vraie donnee) : leur DESIGNATION decode systematiquement en "N t r a"
+NOISE_DESIGNATIONS = {"N T R A"}
 
 NO_COMPTE_RE = re.compile(r"^\d{6}-\d{2}$")
 MONTANT_RE = re.compile(r"^\d{1,3}(?: \d{3})* ?[.,]\d{2}$")
@@ -222,7 +232,11 @@ def build_table(input_file: str, first_page: int, last_page: int):
         def split_prop_montant(chars_in_range):
             """Coupe au plus grand espace entre deux caracteres consecutifs :
             c'est toujours la frontiere nom/montant, plus large que les espaces
-            internes du nom (ET AL, INC., etc)."""
+            internes du nom (ET AL, INC., etc). Mais si le nom deborde sur la ligne
+            physique suivante, cette ligne-ci n'a PAS de montant du tout -- dans ce cas
+            le plus grand espace tombe entre deux mots du nom (ex: 'LES' / 'HABITATIONS
+            SOLIDAIRES'), pas avant un montant. On verifie donc que la partie "montant"
+            contient au moins un chiffre ; sinon tout appartient au nom."""
             chars_sorted = sorted(chars_in_range, key=lambda w: w["x0"])
             if not chars_sorted:
                 return [], []
@@ -231,15 +245,22 @@ def build_table(input_file: str, first_page: int, last_page: int):
                 gap = chars_sorted[i]["x0"] - chars_sorted[i - 1]["x1"]
                 if gap > best_gap:
                     best_gap, best_i = gap, i
-            return chars_sorted[:best_i], chars_sorted[best_i:]
+            prop_chars, montant_chars = chars_sorted[:best_i], chars_sorted[best_i:]
+            # Un vrai montant n'a jamais de lettre autre que O (confondu avec 0 dans
+            # ce meme glyphe ambigu -- corrige plus tard via LOOKALIKE_FIX). Toute
+            # AUTRE lettre trahit un nom, pas un montant : sans ce garde-fou, un 0
+            # confondu avec O au milieu d'un nom (ex: "HABITATI0NS") suffit a faire
+            # croire qu'il y a un montant ici.
+            has_other_letter = any(c["ch"].isalpha() and c["ch"] != "O" for c in montant_chars)
+            has_digit = any(c["ch"].isdigit() for c in montant_chars)
+            if has_other_letter or not has_digit:
+                return chars_sorted, []
+            return prop_chars, montant_chars
 
-        for block, columns, prop_montant_range in list(zip(
-            [sorted(r, key=lambda w: w["x0"]) for r in left_rows], [LEFT_COLUMNS] * len(left_rows),
-            [LEFT_PROP_MONTANT_RANGE] * len(left_rows)
-        )) + list(zip(
-            [sorted(r, key=lambda w: w["x0"]) for r in right_rows], [RIGHT_COLUMNS] * len(right_rows),
-            [RIGHT_PROP_MONTANT_RANGE] * len(right_rows)
-        )):
+        def build_prelim_records(rows, columns, prop_montant_range):
+            prelim = []
+            for row in rows:
+                block = sorted(row, key=lambda w: w["x0"])
                 if not block:
                     continue
                 fields = {name: [] for name, _, _ in columns}
@@ -264,18 +285,92 @@ def build_table(input_file: str, first_page: int, last_page: int):
                     continue  # bruit residuel (virgule/marque isolee), pas une vraie ligne
                 if record["NO_COMPTE"].upper().replace(",", "").strip() in HEADER_WORDS:
                     continue  # ligne d'en-tete de colonnes, pas une donnee
+                if record["DESIGNATION"].upper().strip() in NOISE_DESIGNATIONS:
+                    continue  # ligne fantome (glyphes vectoriels mal isoles), pas une vraie donnee
 
                 for name in NUMERIC_FIELDS:
                     for bad, good in LOOKALIKE_FIX.items():
                         record[name] = record[name].replace(bad, good)
+                record["PROPRIETAIRE"] = ZERO_NEAR_LETTER_RE.sub("O", record["PROPRIETAIRE"])
+                record["DESIGNATION"] = ZERO_NEAR_LETTER_RE.sub("O", record["DESIGNATION"])
 
-                x0_ref = block[0]["x0"]
-                y0_ref = block[0]["ycenter"]
-                record["ARRONDISSEMENT"] = section_for(page_num, x0_ref, y0_ref)
-                record["PAGE"] = page_num + 1
-                record["VALIDE_NO_COMPTE"] = bool(NO_COMPTE_RE.match(record["NO_COMPTE"]))
-                record["VALIDE_MONTANT"] = bool(MONTANT_RE.match(record["MONTANT"]))
-                records.append(record)
+                record["_x0"] = block[0]["x0"]
+                record["_y0"] = block[0]["ycenter"]
+                prelim.append(record)
+            return prelim
+
+        def merge_continuations(prelim):
+            """Un nom de proprietaire ou une adresse trop longue deborde sur une 2e
+            ligne PHYSIQUE dans le PDF (ex: nom -> 'LES HABITATIONS SOLIDAIRES' puis
+            'DE LA SHAPEM' + montant ; ou adresse -> '1288 AV DES CANADIENS-DE-M' puis
+            '#2208' + proprietaire + montant). Cette ligne-la n'a jamais de lot cadastral
+            ni de no de compte valide -- on la fusionne dans la ligne precedente plutot
+            que de la traiter comme une ligne a part. On exige que la ligne precedente
+            n'ait PAS deja de montant : sinon elle est deja complete, et cette ligne sans
+            no de compte est plutot une ligne separee dont le compte a rate son decodage
+            (ex: "KHAJOUEI 12 722,11" appartenant a un tout autre compte) -- la
+            fusionner serait une erreur.
+
+            Un 2e cas distinct : une adresse trop longue deborde carrement dans la
+            colonne du lot cadastral sur la 1ere ligne (ex: "1288 AV DES CANADIENS-
+            DE-M" + "0NTREAL" comme "lot"), et la 2e ligne porte alors le vrai lot
+            cadastral en plus du numero d'unite/proprietaire/montant (ex: "#2208" +
+            "00 5888333" + "ETC LAURSON RIVIERE" + "5 361,91"). Ici le lot de la
+            ligne precedente n'est pas un vrai lot -- c'est la suite de l'adresse --
+            donc on le rattache a DESIGNATION et on prend le vrai lot sur la 2e ligne."""
+            prelim.sort(key=lambda r: r["_y0"])
+            merged = []
+            for rec in prelim:
+                is_continuation = (
+                    merged
+                    and not NO_COMPTE_RE.match(rec["NO_COMPTE"])
+                    and not rec["CAD_LOT"]
+                    and (rec["DESIGNATION"] or rec["PROPRIETAIRE"] or rec["MONTANT"])
+                    and not merged[-1]["MONTANT"]
+                )
+                is_address_wrap = (
+                    not is_continuation
+                    and merged
+                    and not NO_COMPTE_RE.match(rec["NO_COMPTE"])
+                    and rec["CAD_LOT"]
+                    and (rec["PROPRIETAIRE"] or rec["MONTANT"])
+                    and NO_COMPTE_RE.match(merged[-1]["NO_COMPTE"])
+                    and not merged[-1]["PROPRIETAIRE"]
+                    and not merged[-1]["MONTANT"]
+                )
+                if is_continuation:
+                    prev = merged[-1]
+                    if rec["DESIGNATION"]:
+                        prev["DESIGNATION"] = (prev["DESIGNATION"] + " " + rec["DESIGNATION"]).strip()
+                    if rec["PROPRIETAIRE"]:
+                        prev["PROPRIETAIRE"] = (prev["PROPRIETAIRE"] + " " + rec["PROPRIETAIRE"]).strip()
+                    if not prev["MONTANT"] and rec["MONTANT"]:
+                        prev["MONTANT"] = rec["MONTANT"]
+                    continue
+                if is_address_wrap:
+                    prev = merged[-1]
+                    base = prev["DESIGNATION"] + prev["CAD_LOT"]
+                    if rec["DESIGNATION"]:
+                        base += ("" if base.endswith("-") else " ") + rec["DESIGNATION"]
+                    prev["DESIGNATION"] = ZERO_NEAR_LETTER_RE.sub("O", base.strip())
+                    prev["CAD_LOT"] = rec["CAD_LOT"]
+                    prev["PROPRIETAIRE"] = rec["PROPRIETAIRE"]
+                    prev["MONTANT"] = rec["MONTANT"]
+                    continue
+                merged.append(rec)
+            return merged
+
+        left_prelim = build_prelim_records(left_rows, LEFT_COLUMNS, LEFT_PROP_MONTANT_RANGE)
+        right_prelim = build_prelim_records(right_rows, RIGHT_COLUMNS, RIGHT_PROP_MONTANT_RANGE)
+
+        for record in merge_continuations(left_prelim) + merge_continuations(right_prelim):
+            record["ARRONDISSEMENT"] = section_for(page_num, record["_x0"], record["_y0"])
+            record["PAGE"] = page_num + 1
+            record["VALIDE_NO_COMPTE"] = bool(NO_COMPTE_RE.match(record["NO_COMPTE"]))
+            record["VALIDE_MONTANT"] = bool(MONTANT_RE.match(record["MONTANT"]))
+            del record["_x0"]
+            del record["_y0"]
+            records.append(record)
 
     doc.close()
     return records
