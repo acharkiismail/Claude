@@ -120,58 +120,84 @@ def try_delete_file(path: str):
 # MASTER FILE (accumulation journée + fusion incrémentale)
 # ============================================================
 
-def load_master(master_path: str):
-    """Retourne les lignes du maître si elles datent d'aujourd'hui (Toronto), sinon repart à vide."""
-    if not master_path or not os.path.exists(master_path):
-        return []
+def _row_key(row: dict, key_col: str) -> str:
+    """Clé de fusion d'une ligne, ou "" si la colonne est absente/vide."""
+    if not key_col:
+        return ""
+    v = row.get(key_col)
+    return "" if v is None else str(v).strip()
+
+
+def _read_master_file(path: str):
+    """Retourne (rows, ok). ok=False uniquement si le fichier existe mais est illisible
+    ou corrompu — un fichier absent ou daté d'hier est un reset normal, pas une erreur."""
+    if not path or not os.path.exists(path):
+        return [], True
     try:
-        with open(master_path, "r", encoding="utf-8-sig") as f:
+        with open(path, "r", encoding="utf-8-sig") as f:
             data = _safe_load_json_text(f.read())
     except Exception:
-        return []
-    if not isinstance(data, dict):
-        return []
+        return [], False
+    if not isinstance(data, dict) or "rows" not in data:
+        return [], False
+    if not isinstance(data.get("rows"), list):
+        return [], False
     if data.get("date") != today_toronto_str():
-        return []
-    rows = data.get("rows")
-    return rows if isinstance(rows, list) else []
+        return [], True
+    return data["rows"], True
+
+
+def load_master(master_path: str):
+    """Lignes du maître pour aujourd'hui (Toronto), avec repli sur la sauvegarde
+    si le fichier principal a été corrompu par une écriture interrompue."""
+    rows, ok = _read_master_file(master_path)
+    if ok:
+        return rows
+
+    bak_rows, bak_ok = _read_master_file(master_path + ".bak")
+    if bak_ok and bak_rows:
+        print(f"WARNING: {master_path} illisible — reprise depuis la sauvegarde "
+              f"({len(bak_rows)} ligne(s))", file=sys.stderr)
+        return bak_rows
+
+    print(f"WARNING: {master_path} illisible et aucune sauvegarde exploitable — "
+          f"la journée repart à vide", file=sys.stderr)
+    return []
 
 
 def merge_into_master(master_path: str, new_rows: list, key_col: str):
     """Upsert new_rows (lot incrémental, ex. dernière heure) dans le fichier maître
     (journée complète) en se basant sur key_col, puis persiste et renvoie le résultat.
-    Les lignes sans key_col renseigné sont simplement ajoutées (pas de dédoublonnage possible)."""
+    Les lignes sans key_col renseigné sont conservées telles quelles, sans dédoublonnage."""
     master_rows = load_master(master_path)
 
     by_key = {}
     ordered_keys = []
     unkeyed = []
-    for r in master_rows:
-        if not isinstance(r, dict):
-            continue
-        k = str(r.get(key_col)).strip() if key_col else ""
-        if k:
-            if k not in by_key:
-                ordered_keys.append(k)
-            by_key[k] = r
-        else:
-            unkeyed.append(r)
 
-    for r in new_rows:
-        if not isinstance(r, dict):
-            continue
-        k = str(r.get(key_col)).strip() if key_col else ""
-        if k:
-            if k not in by_key:
-                ordered_keys.append(k)
-            by_key[k] = r
-        else:
-            unkeyed.append(r)
+    for source in (master_rows, new_rows):
+        for r in source:
+            if not isinstance(r, dict):
+                continue
+            k = _row_key(r, key_col)
+            if k:
+                if k not in by_key:
+                    ordered_keys.append(k)
+                by_key[k] = r
+            else:
+                unkeyed.append(r)
 
     merged = [by_key[k] for k in ordered_keys] + unkeyed
 
-    master_content = json.dumps({"date": today_toronto_str(), "rows": merged}, ensure_ascii=False)
-    safe_write(master_path, master_content)
+    # Sauvegarde de l'état précédent avant réécriture : si l'écriture du maître est
+    # interrompue (coupure réseau, process tué), la journée reste récupérable.
+    if master_rows:
+        safe_write(master_path + ".bak",
+                   json.dumps({"date": today_toronto_str(), "rows": master_rows},
+                              ensure_ascii=False))
+
+    safe_write(master_path,
+               json.dumps({"date": today_toronto_str(), "rows": merged}, ensure_ascii=False))
     return merged
 
 
@@ -345,7 +371,7 @@ def count_states(rows, exception_col, completed_col, locked_set):
 def _build_js(page_size, default_sort_col_js, default_sort_desc_js, refresh_seconds):
     return (
         "const PAGE_SIZE = " + str(page_size) + ";\n"
-        "const DEFAULT_SORT_COLUMN = \"" + default_sort_col_js + "\";\n"
+        "const DEFAULT_SORT_COLUMN = " + default_sort_col_js + ";\n"
         "const DEFAULT_SORT_DESC = " + default_sort_desc_js + ";\n"
         "const REFRESH_SECONDS = " + str(refresh_seconds) + ";\n"
         "\n"
@@ -431,12 +457,27 @@ def _build_js(page_size, default_sort_col_js, default_sort_desc_js, refresh_seco
         "  Array.from(filterRow.cells).forEach(c => { c.style.top = headerH + 'px'; });\n"
         "}\n"
         "\n"
+        # Surlignage construit en noeuds DOM : le contenu des cellules reste du texte,
+        # jamais du HTML réinterprété (data-display vient de la file, pas d'un gabarit).
         "function applyHighlight(term) {\n"
         "  document.querySelectorAll('#table tbody td[data-display]').forEach(td => {\n"
         "    const display = td.getAttribute('data-display') || '';\n"
-        "    if (!term) { td.textContent = display; return; }\n"
-        "    const esc = term.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');\n"
-        "    td.innerHTML = display.replace(new RegExp('(' + esc + ')', 'gi'), '<mark>$1</mark>');\n"
+        "    td.textContent = display;\n"
+        "    if (!term) return;\n"
+        "    const hay = display.toLowerCase(), needle = term.toLowerCase();\n"
+        "    let at = hay.indexOf(needle);\n"
+        "    if (at < 0) return;\n"
+        "    td.textContent = '';\n"
+        "    let pos = 0;\n"
+        "    while (at >= 0) {\n"
+        "      if (at > pos) td.appendChild(document.createTextNode(display.slice(pos, at)));\n"
+        "      const m = document.createElement('mark');\n"
+        "      m.textContent = display.slice(at, at + term.length);\n"
+        "      td.appendChild(m);\n"
+        "      pos = at + term.length;\n"
+        "      at = hay.indexOf(needle, pos);\n"
+        "    }\n"
+        "    if (pos < display.length) td.appendChild(document.createTextNode(display.slice(pos)));\n"
         "  });\n"
         "}\n"
         "\n"
@@ -681,7 +722,9 @@ def build_html_table(rows, cols, title, default_sort_col, default_sort_desc,
         tr_list.append(f'<tr class="row-{state}">' + "".join(tds) + "</tr>")
 
     tbody = "\n".join(tr_list)
-    default_sort_col_js  = escape(default_sort_col or "")
+    # Littéral JS (pas d'échappement HTML ici : le nom doit correspondre au textContent
+    # de l'en-tête). "<" neutralisé pour qu'un nom de colonne ne puisse fermer le <script>.
+    default_sort_col_js  = json.dumps(default_sort_col or "").replace("<", "\\u003c")
     default_sort_desc_js = "true" if default_sort_desc else "false"
     js = _build_js(PAGE_SIZE, default_sort_col_js, default_sort_desc_js, REFRESH_SECONDS)
 
@@ -787,7 +830,12 @@ def build_html_table(rows, cols, title, default_sort_col, default_sort_desc,
 def run_build(input_json, output_html, title, sort_col, sort_desc,
               exception_col, completed_col, locks_json,
               master_json="", key_col=""):
-    rows = read_rows(input_json)
+    if master_json and not os.path.exists(input_json):
+        # En mode incrémental, une période sans aucun cas modifié est normale :
+        # le rapport est régénéré à partir du maître seul.
+        rows = []
+    else:
+        rows = read_rows(input_json)
 
     if master_json:
         rows = merge_into_master(master_json, rows, key_col)
