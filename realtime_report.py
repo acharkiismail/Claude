@@ -17,6 +17,11 @@ PAGE_SIZE = 100
 
 WRAPPER_KEYS = ("rows", "data", "items", "results", "Results", "value")
 
+# Libellé de la colonne "virtuelle" affichée dans le tableau (calculée depuis
+# exception_col/completed_col, elle n'existe dans aucune ligne JSON) — --sort_col
+# peut la cibler par ce même nom, comme n'importe quelle autre colonne.
+LAST_UPDATE_COL = "Dernière mise à jour"
+
 try:
     from zoneinfo import ZoneInfo
     TORONTO_TZ = ZoneInfo("America/Toronto")
@@ -277,6 +282,27 @@ def today_toronto_str() -> str:
     return dt_local.strftime("%Y-%m-%d")
 
 
+def _get_col_raw(row: dict, col: str) -> str:
+    if not col:
+        return ""
+    v = row.get(col)
+    s = "" if v is None else str(v).strip()
+    return "" if is_blank_or_default_date(s) else s
+
+
+def _last_update_raw(row: dict, exception_col: str, completed_col: str) -> str:
+    """Même règle que la colonne affichée : exception_col sinon completed_col."""
+    return _get_col_raw(row, exception_col) or _get_col_raw(row, completed_col)
+
+
+def sort_value_for_col(row: dict, sort_col: str, exception_col: str, completed_col: str):
+    """Valeur utilisée pour trier une ligne selon sort_col — gère le cas où sort_col
+    est la colonne virtuelle "Dernière mise à jour", qui n'existe dans aucune ligne."""
+    if sort_col == LAST_UPDATE_COL:
+        return _last_update_raw(row, exception_col, completed_col)
+    return row.get(sort_col)
+
+
 # ============================================================
 # SORTING
 # ============================================================
@@ -316,17 +342,27 @@ def sort_rows_in_python(rows, sort_col: str, desc: bool,
     locked_rows = [r for r in rows if isinstance(r, dict) and is_locked(r)]
     other_rows  = [r for r in rows if not (isinstance(r, dict) and is_locked(r))]
 
-    if sort_col and any(isinstance(r, dict) and sort_col in r for r in other_rows):
+    is_virtual_col = sort_col == LAST_UPDATE_COL
+    col_has_data = is_virtual_col or any(isinstance(r, dict) and sort_col in r for r in other_rows)
+
+    if sort_col and not col_has_data:
+        print(f"WARNING: --sort_col '{sort_col}' ne correspond à aucune colonne des données "
+              f"(ni à la colonne calculée '{LAST_UPDATE_COL}') — aucun tri appliqué, "
+              f"les lignes restent dans leur ordre d'arrivée.", file=sys.stderr)
+
+    if sort_col and col_has_data:
         rows_with, rows_empty = [], []
         for r in other_rows:
             if not isinstance(r, dict):
                 continue
-            sval = "" if r.get(sort_col) is None else str(r.get(sort_col)).strip()
+            sval = sort_value_for_col(r, sort_col, exception_col, completed_col)
+            sval = "" if sval is None else str(sval).strip()
             if sval == "" or is_blank_or_default_date(sval):
                 rows_empty.append(r)
             else:
                 rows_with.append(r)
-        rows_with.sort(key=lambda rr: normalize_for_sort(rr.get(sort_col)), reverse=desc)
+        rows_with.sort(key=lambda rr: normalize_for_sort(
+            sort_value_for_col(rr, sort_col, exception_col, completed_col)), reverse=desc)
         other_rows = rows_with + rows_empty
 
     return locked_rows + other_rows
@@ -674,7 +710,6 @@ def build_html_table(rows, cols, title, default_sort_col, default_sort_desc,
     skip_cols = {c for c in (exception_col, completed_col) if c}
     display_data_cols = [c for c in cols if c not in skip_cols]
 
-    LAST_UPDATE_COL = "Dernière mise à jour"
     first_col  = display_data_cols[:1]
     other_cols = display_data_cols[1:]
     display_cols = ["État"] + first_col + [LAST_UPDATE_COL] + other_cols
@@ -683,13 +718,6 @@ def build_html_table(rows, cols, title, default_sort_col, default_sort_desc,
         f'<th onclick="sortTable({i})">{escape(c)} <span class="arrow"></span></th>'
         for i, c in enumerate(display_cols)
     )
-
-    def _get_col_raw(row, col):
-        if not col:
-            return ""
-        v = row.get(col)
-        s = "" if v is None else str(v).strip()
-        return "" if is_blank_or_default_date(s) else s
 
     def _make_td(raw_val):
         raw_stripped = str(raw_val).strip() if raw_val else ""
@@ -709,7 +737,7 @@ def build_html_table(rows, cols, title, default_sort_col, default_sort_desc,
         for c in first_col:
             tds.append(_make_td(r.get(c)))
 
-        last_update_raw    = _get_col_raw(r, exception_col) or _get_col_raw(r, completed_col)
+        last_update_raw    = _last_update_raw(r, exception_col, completed_col)
         last_update_pretty = pretty_iso_to_toronto(last_update_raw)
         tds.append(
             f'<td data-raw="{escape(last_update_raw)}" data-display="{escape(last_update_pretty)}">'
