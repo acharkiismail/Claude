@@ -101,12 +101,22 @@ def read_locked_set(locks_json_path: str):
 # ============================================================
 
 def safe_write(final_path: str, content: str):
-    """Écriture directe — pas de os.replace (compatibilité lecteur réseau)."""
+    """Écriture directe — pas de os.replace (compatibilité lecteur réseau).
+    Réessaie sur verrou transitoire (PermissionError) : un cycle précédent
+    encore en train d'écrire le même fichier, un antivirus qui le scanne, etc."""
     dirpath = os.path.dirname(final_path)
     if dirpath:
         os.makedirs(dirpath, exist_ok=True)
-    with open(final_path, "w", encoding="utf-8") as f:
-        f.write(content)
+    last_err = None
+    for _ in range(10):
+        try:
+            with open(final_path, "w", encoding="utf-8") as f:
+                f.write(content)
+            return
+        except PermissionError as e:
+            last_err = e
+            time.sleep(0.3)
+    raise last_err
 
 
 def try_delete_file(path: str):
