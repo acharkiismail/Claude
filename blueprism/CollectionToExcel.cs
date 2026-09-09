@@ -14,8 +14,11 @@
 //   - d'AUCUNE référence d'assembly (Excel est piloté en COM tardif via le ProgID
 //     "Excel.Application" ; il faut seulement qu'Excel soit installé sur la machine) ;
 //   - d'AUCUN namespace à déclarer : tous les types sont écrits en nom complet
-//     (System.Collections.Generic.List<string>, System.Runtime.InteropServices.Marshal, ...)
-//     et aucune méthode LINQ n'est utilisée.
+//     (System.Collections.Generic.List<string>, System.Runtime.InteropServices.Marshal, ...).
+//
+//   Le Code Stage ne référence que mscorlib / System / System.Data : rien de ce qui vit dans
+//   System.Core.dll n'est utilisé — ni LINQ, ni HashSet<T>. Seul List<T> (mscorlib) sert de
+//   registre de noms de feuilles, avec une comparaison insensible à la casse faite à la main.
 //
 // À coller tel quel dans la zone de code du Code Stage, en commençant à la ligne
 // `Sheets_Written = "";` — sans lignes `using`, sans méthode englobante, et sans modificateur
@@ -38,8 +41,9 @@ if (xlType == null)
     throw new System.InvalidOperationException("Microsoft Excel n'est pas installe sur cette machine (ProgID 'Excel.Application' introuvable).");
 
 string rootSheet = (Sheet_Name == null || Sheet_Name.Trim().Length == 0) ? "Data" : Sheet_Name;
-System.Collections.Generic.HashSet<string> sheetNamesUsed =
-    new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+
+// List<> plutot que HashSet<> : HashSet<T> vit dans System.Core.dll, que le Code Stage
+// Blue Prism ne reference pas par defaut, alors que List<T> est dans mscorlib.
 System.Collections.Generic.List<string> sheetsCreated =
     new System.Collections.Generic.List<string>();
 
@@ -56,7 +60,7 @@ try
     xlBooks = GetProp(xlApp, "Workbooks");
     xlBook = Invoke(xlBooks, "Add");
 
-    WriteTable(xlBook, Collection, rootSheet, sheetNamesUsed, sheetsCreated, -1);
+    WriteTable(xlBook, Collection, rootSheet, sheetsCreated, -1);
 
     // Workbooks.Add() cree un classeur avec une feuille vide : on supprime tout ce qu'on n'a pas ecrit.
     object bookSheets = GetProp(xlBook, "Sheets");
@@ -65,7 +69,7 @@ try
     {
         object oneSheet = GetProp(bookSheets, "Item", idx);
         string oneSheetName = System.Convert.ToString(GetProp(oneSheet, "Name"));
-        if (!sheetsCreated.Contains(oneSheetName))
+        if (!ContainsIgnoreCase(sheetsCreated, oneSheetName))
             Invoke(oneSheet, "Delete");
         System.Runtime.InteropServices.Marshal.ReleaseComObject(oneSheet);
     }
@@ -97,10 +101,9 @@ finally
 // de type collection imbriquee pour lui donner sa propre feuille a son tour.
 // parentKey vaut -1 pour la collection racine (pas de colonne ParentRowKey).
 void WriteTable(object wb, System.Data.DataTable tbl, string wantedName,
-    System.Collections.Generic.HashSet<string> usedNamesSet,
     System.Collections.Generic.List<string> createdList, int parentKey)
 {
-    string newSheetName = MakeUniqueSheetName(wantedName, usedNamesSet);
+    string newSheetName = MakeUniqueSheetName(wantedName, createdList);
 
     object wsSheets = GetProp(wb, "Sheets");
     int wsCount = System.Convert.ToInt32(GetProp(wsSheets, "Count"));
@@ -109,7 +112,6 @@ void WriteTable(object wb, System.Data.DataTable tbl, string wantedName,
     SetProp(newWs, "Name", newSheetName);
     System.Runtime.InteropServices.Marshal.ReleaseComObject(afterSh);
     System.Runtime.InteropServices.Marshal.ReleaseComObject(wsSheets);
-    createdList.Add(newSheetName);
 
     System.Collections.Generic.List<string> nestedCols = new System.Collections.Generic.List<string>();
     System.Collections.Generic.List<System.Data.DataColumn> flatCols =
@@ -178,7 +180,7 @@ void WriteTable(object wb, System.Data.DataTable tbl, string wantedName,
             if (dr[nestedName] is System.Data.DataTable)
             {
                 System.Data.DataTable nestedTbl = (System.Data.DataTable)dr[nestedName];
-                WriteTable(wb, nestedTbl, newSheetName + "_" + nestedName, usedNamesSet, createdList, ri + 1);
+                WriteTable(wb, nestedTbl, newSheetName + "_" + nestedName, createdList, ri + 1);
             }
         }
     }
@@ -197,8 +199,22 @@ object ToCellValue(object raw)
     return raw.ToString();
 }
 
+// Comparaison insensible a la casse sans HashSet<> ni LINQ (tous deux dans System.Core.dll,
+// non reference par le Code Stage) : la liste des feuilles reste tres courte.
+bool ContainsIgnoreCase(System.Collections.Generic.List<string> haystack, string needle)
+{
+    for (int n = 0; n < haystack.Count; n++)
+    {
+        if (string.Equals(haystack[n], needle, System.StringComparison.OrdinalIgnoreCase))
+            return true;
+    }
+    return false;
+}
+
 // Noms de feuille Excel : 31 caracteres max, pas de [ ] * ? : / \, et uniques dans le classeur.
-string MakeUniqueSheetName(string wanted, System.Collections.Generic.HashSet<string> usedSet)
+// Le nom retenu est ajoute a usedList : la liste sert a la fois de registre d'unicite et de
+// liste des feuilles creees (renvoyee dans Sheets_Written).
+string MakeUniqueSheetName(string wanted, System.Collections.Generic.List<string> usedList)
 {
     string clean = "";
     if (wanted != null)
@@ -218,7 +234,7 @@ string MakeUniqueSheetName(string wanted, System.Collections.Generic.HashSet<str
 
     string candidate = clean;
     int sfx = 1;
-    while (usedSet.Contains(candidate))
+    while (ContainsIgnoreCase(usedList, candidate))
     {
         string sfxText = "_" + sfx.ToString();
         sfx++;
@@ -227,7 +243,7 @@ string MakeUniqueSheetName(string wanted, System.Collections.Generic.HashSet<str
             keepLen = 31 - sfxText.Length;
         candidate = clean.Substring(0, keepLen) + sfxText;
     }
-    usedSet.Add(candidate);
+    usedList.Add(candidate);
     return candidate;
 }
 

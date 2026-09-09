@@ -27,7 +27,9 @@ apparaît dans les données.
 4. **Aucune référence, aucun namespace à ajouter.** Le code pilote Excel en
    liaison tardive (`Type.GetTypeFromProgID("Excel.Application")` + réflexion),
    et tous les types sont écrits en nom complet (`System.Collections.Generic.List<string>`,
-   `System.Runtime.InteropServices.Marshal`, ...) sans aucune méthode LINQ.
+   `System.Runtime.InteropServices.Marshal`, ...). Il n'utilise que les assemblies
+   déjà référencées par le Code Stage (mscorlib, System, System.Data) — rien de
+   ce qui vit dans `System.Core.dll`, donc ni LINQ ni `HashSet<T>`.
 5. Coller le contenu de `CollectionToExcel.cs` dans l'éditeur de code, **à partir
    de la ligne `Sheets_Written = "";`**.
 
@@ -40,7 +42,8 @@ générée**. Trois conséquences, qui sont les erreurs rencontrées à la mise 
 |---|---|---|
 | `Syntax error, '(' expected` | lignes `using` collées dans la zone de code | aucun `using` : types en nom complet |
 | `The modifier 'private' is not valid for this item` | méthodes déclarées avec un modificateur d'accès (elles deviennent des fonctions locales) | méthodes sans `private`/`public` |
-| `The name 'Marshal'/'BindingFlags'/'HashSet<>' does not exist` | namespaces non importés | types en nom complet, LINQ supprimé |
+| `The name 'Marshal'/'BindingFlags'/'List<>' does not exist` | namespaces non importés | types en nom complet |
+| `'HashSet<>' does not exist in the namespace 'System.Collections.Generic'` | `HashSet<T>` et LINQ vivent dans `System.Core.dll`, que le Code Stage ne référence pas (contrairement à `List<T>`, dans mscorlib) | `HashSet` et LINQ supprimés, remplacés par `List<string>` + comparaison manuelle |
 | `A local or parameter named 'workbook' cannot be declared in this scope` | un paramètre de fonction locale porte le même nom qu'une variable du corps principal | noms distincts partout (`xlBook` / `wb`, ...) |
 | `The out parameter 'Sheets_Written' must be assigned...` | Blue Prism remplace les espaces des Data Items par des underscores | variables `File_Path`, `Sheet_Name`, `Sheets_Written` |
 
