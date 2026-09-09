@@ -1,204 +1,252 @@
 // Blue Prism Code Stage — Object Studio action "Write Collection To Excel"
 //
-// Wiring in Blue Prism:
+// Wiring in Blue Prism (Code Stage > onglet Inputs/Outputs) — les noms C# ci-dessous doivent
+// correspondre EXACTEMENT à la colonne "Name" de cet onglet. Blue Prism remplace les espaces
+// par des underscores, donc un Data Item "File Path" devient la variable C# `File_Path` :
 //   Inputs:
-//     Collection   (Collection)  -> bound to C# variable `Collection` (type System.Data.DataTable)
-//     File Path    (Text)        -> bound to C# variable `FilePath`   (type string)
-//     Sheet Name   (Text, optional) -> bound to C# variable `SheetName` (type string)
+//     Collection  (Collection) -> variable C# `Collection`  (System.Data.DataTable)
+//     File Path   (Text)       -> variable C# `File_Path`   (string)
+//     Sheet Name  (Text, opt.) -> variable C# `Sheet_Name`  (string)
 //   Outputs:
-//     Sheets Written (Text)      -> bound to C# variable `SheetsWritten` (comma-separated list)
+//     Sheets Written (Text)    -> variable C# `Sheets_Written` (string, liste séparée par des virgules)
 //
-//   References needed on the Code Stage: NONE. This drives Excel through late-bound COM
-//   (Type.GetTypeFromProgID + reflection), not the Microsoft.Office.Interop.Excel assembly —
-//   it only needs Excel installed on the machine (design AND the Runtime Resource that will
-//   run this process), since that's what registers the "Excel.Application" COM ProgID.
+// Le code ci-dessous n'a besoin :
+//   - d'AUCUNE référence d'assembly (Excel est piloté en COM tardif via le ProgID
+//     "Excel.Application" ; il faut seulement qu'Excel soit installé sur la machine) ;
+//   - d'AUCUN namespace à déclarer : tous les types sont écrits en nom complet
+//     (System.Collections.Generic.List<string>, System.Runtime.InteropServices.Marshal, ...)
+//     et aucune méthode LINQ n'est utilisée.
 //
-//   IMPORTANT — do NOT paste "using" lines into the code box: Blue Prism's Code Stage compiles
-//   this text as the body of its own generated method, so `using` directives and access
-//   modifiers (`private`/`public`) on method declarations are rejected. Instead, in the Code
-//   Stage editor add these to the Namespaces list (its own separate field, not the code box):
-//     System.Collections.Generic
-//     System.Data
-//     System.Linq
-//     System.Reflection
-//     System.Runtime.InteropServices
+// À coller tel quel dans la zone de code du Code Stage, en commençant à la ligne
+// `Sheets_Written = "";` — sans lignes `using`, sans méthode englobante, et sans modificateur
+// d'accès (`private`/`public`) sur les fonctions en bas : Blue Prism compile ce texte comme le
+// corps de sa propre méthode générée.
 //
-//   Blue Prism stores a nested Collection field internally as a System.Data.DataTable value
-//   inside the parent DataTable's cell, so a column whose DataType is DataTable is a nested
-//   collection field — that's the signal this code uses to decide what gets its own sheet.
-//
-// Paste everything below (starting at the first "if") into the Code Stage's code editor —
-// no wrapping method, no "using" lines, no access modifiers on the helper methods below.
+// Blue Prism stocke un champ de type Collection imbriquée comme une valeur System.Data.DataTable
+// dans la cellule de la DataTable parente : une colonne dont le DataType est DataTable est donc
+// une collection imbriquée, et c'est ce qui déclenche l'écriture dans une feuille dédiée.
+
+Sheets_Written = "";
 
 if (Collection == null)
-    throw new InvalidOperationException("Input collection is not set.");
-if (string.IsNullOrWhiteSpace(FilePath))
-    throw new InvalidOperationException("File Path is required.");
+    throw new System.InvalidOperationException("La collection d'entrée n'est pas initialisée.");
+if (File_Path == null || File_Path.Trim().Length == 0)
+    throw new System.InvalidOperationException("File Path est obligatoire.");
 
-var excelType = Type.GetTypeFromProgID("Excel.Application");
-if (excelType == null)
-    throw new InvalidOperationException("Microsoft Excel n'est pas installé sur cette machine (ProgID 'Excel.Application' introuvable).");
+System.Type xlType = System.Type.GetTypeFromProgID("Excel.Application");
+if (xlType == null)
+    throw new System.InvalidOperationException("Microsoft Excel n'est pas installe sur cette machine (ProgID 'Excel.Application' introuvable).");
 
-var rootSheetName = string.IsNullOrWhiteSpace(SheetName) ? "Data" : SheetName;
-var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-var writtenSheets = new List<string>();
+string rootSheet = (Sheet_Name == null || Sheet_Name.Trim().Length == 0) ? "Data" : Sheet_Name;
+System.Collections.Generic.HashSet<string> sheetNamesUsed =
+    new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+System.Collections.Generic.List<string> sheetsCreated =
+    new System.Collections.Generic.List<string>();
 
-object excelApp = Activator.CreateInstance(excelType);
-SetProp(excelApp, "Visible", false);
-SetProp(excelApp, "DisplayAlerts", false);
-
-object workbooks = GetProp(excelApp, "Workbooks");
-object workbook = Invoke(workbooks, "Add");
+object xlApp = null;
+object xlBooks = null;
+object xlBook = null;
 
 try
 {
-    WriteTable(workbook, Collection, rootSheetName, usedNames, writtenSheets, parentRowKey: null);
+    xlApp = System.Activator.CreateInstance(xlType);
+    SetProp(xlApp, "Visible", false);
+    SetProp(xlApp, "DisplayAlerts", false);
 
-    // Workbooks.Add() starts with a default blank sheet — drop anything we didn't write.
-    object sheets = GetProp(workbook, "Sheets");
-    var sheetCount = (int)GetProp(sheets, "Count");
-    for (var i = sheetCount; i >= 1; i--)
+    xlBooks = GetProp(xlApp, "Workbooks");
+    xlBook = Invoke(xlBooks, "Add");
+
+    WriteTable(xlBook, Collection, rootSheet, sheetNamesUsed, sheetsCreated, -1);
+
+    // Workbooks.Add() cree un classeur avec une feuille vide : on supprime tout ce qu'on n'a pas ecrit.
+    object bookSheets = GetProp(xlBook, "Sheets");
+    int bookSheetCount = System.Convert.ToInt32(GetProp(bookSheets, "Count"));
+    for (int idx = bookSheetCount; idx >= 1; idx--)
     {
-        object sheet = Invoke(sheets, "Item", i);
-        var name = (string)GetProp(sheet, "Name");
-        if (!writtenSheets.Contains(name))
-            Invoke(sheet, "Delete");
-        Marshal.ReleaseComObject(sheet);
+        object oneSheet = GetProp(bookSheets, "Item", idx);
+        string oneSheetName = System.Convert.ToString(GetProp(oneSheet, "Name"));
+        if (!sheetsCreated.Contains(oneSheetName))
+            Invoke(oneSheet, "Delete");
+        System.Runtime.InteropServices.Marshal.ReleaseComObject(oneSheet);
     }
-    Marshal.ReleaseComObject(sheets);
+    System.Runtime.InteropServices.Marshal.ReleaseComObject(bookSheets);
 
-    // xlOpenXMLWorkbook = 51 (.xlsx)
-    Invoke(workbook, "SaveAs", FilePath, 51);
-    SheetsWritten = string.Join(",", writtenSheets);
+    // 51 = xlOpenXMLWorkbook (.xlsx)
+    Invoke(xlBook, "SaveAs", File_Path, 51);
+    Sheets_Written = string.Join(",", sheetsCreated.ToArray());
 }
 finally
 {
-    Invoke(workbook, "Close", false);
-    Invoke(excelApp, "Quit");
-    Marshal.ReleaseComObject(workbook);
-    Marshal.ReleaseComObject(workbooks);
-    Marshal.ReleaseComObject(excelApp);
-    GC.Collect();
-    GC.WaitForPendingFinalizers();
+    if (xlBook != null)
+    {
+        Invoke(xlBook, "Close", false);
+        System.Runtime.InteropServices.Marshal.ReleaseComObject(xlBook);
+    }
+    if (xlBooks != null)
+        System.Runtime.InteropServices.Marshal.ReleaseComObject(xlBooks);
+    if (xlApp != null)
+    {
+        Invoke(xlApp, "Quit");
+        System.Runtime.InteropServices.Marshal.ReleaseComObject(xlApp);
+    }
+    System.GC.Collect();
+    System.GC.WaitForPendingFinalizers();
 }
 
-// Writes one DataTable to its own sheet, then recurses into any nested-collection columns
-// so multi-level nesting each lands on its own sheet.
-void WriteTable(object workbook, DataTable table, string desiredSheetName,
-    HashSet<string> usedNames, List<string> writtenSheets, int? parentRowKey)
+// Ecrit une DataTable dans sa propre feuille, puis descend recursivement dans chaque colonne
+// de type collection imbriquee pour lui donner sa propre feuille a son tour.
+// parentKey vaut -1 pour la collection racine (pas de colonne ParentRowKey).
+void WriteTable(object wb, System.Data.DataTable tbl, string wantedName,
+    System.Collections.Generic.HashSet<string> usedNamesSet,
+    System.Collections.Generic.List<string> createdList, int parentKey)
 {
-    var sheetName = MakeUniqueSheetName(desiredSheetName, usedNames);
+    string newSheetName = MakeUniqueSheetName(wantedName, usedNamesSet);
 
-    object sheets = GetProp(workbook, "Sheets");
-    var sheetCount = (int)GetProp(sheets, "Count");
-    object afterSheet = Invoke(sheets, "Item", sheetCount);
-    object ws = Invoke(sheets, "Add", Type.Missing, afterSheet, Type.Missing, Type.Missing);
-    SetProp(ws, "Name", sheetName);
-    Marshal.ReleaseComObject(afterSheet);
-    Marshal.ReleaseComObject(sheets);
-    writtenSheets.Add(sheetName);
+    object wsSheets = GetProp(wb, "Sheets");
+    int wsCount = System.Convert.ToInt32(GetProp(wsSheets, "Count"));
+    object afterSh = GetProp(wsSheets, "Item", wsCount);
+    object newWs = Invoke(wsSheets, "Add", System.Type.Missing, afterSh, System.Type.Missing, System.Type.Missing);
+    SetProp(newWs, "Name", newSheetName);
+    System.Runtime.InteropServices.Marshal.ReleaseComObject(afterSh);
+    System.Runtime.InteropServices.Marshal.ReleaseComObject(wsSheets);
+    createdList.Add(newSheetName);
 
-    var nestedColumns = table.Columns.Cast<DataColumn>()
-        .Where(c => c.DataType == typeof(DataTable))
-        .Select(c => c.ColumnName)
-        .ToList();
-
-    var flatColumns = table.Columns.Cast<DataColumn>()
-        .Where(c => c.DataType != typeof(DataTable))
-        .ToList();
-
-    var startCol = parentRowKey.HasValue ? 2 : 1;
-    var totalCols = startCol + flatColumns.Count;
-    var totalRows = table.Rows.Count + 1;
-    var buffer = new object[totalRows, totalCols];
-
-    if (parentRowKey.HasValue)
-        buffer[0, 0] = "ParentRowKey";
-    buffer[0, startCol - 1] = "RowKey";
-    for (var c = 0; c < flatColumns.Count; c++)
-        buffer[0, startCol + c] = flatColumns[c].ColumnName;
-
-    for (var r = 0; r < table.Rows.Count; r++)
+    System.Collections.Generic.List<string> nestedCols = new System.Collections.Generic.List<string>();
+    System.Collections.Generic.List<System.Data.DataColumn> flatCols =
+        new System.Collections.Generic.List<System.Data.DataColumn>();
+    foreach (System.Data.DataColumn col in tbl.Columns)
     {
-        var row = table.Rows[r];
-        var rowKey = r + 1;
-        var bufRow = r + 1;
-
-        if (parentRowKey.HasValue)
-            buffer[bufRow, 0] = parentRowKey.Value;
-        buffer[bufRow, startCol - 1] = rowKey;
-
-        for (var c = 0; c < flatColumns.Count; c++)
-        {
-            var value = row[flatColumns[c]];
-            buffer[bufRow, startCol + c] = value is DBNull ? null : value;
-        }
+        if (col.DataType == typeof(System.Data.DataTable))
+            nestedCols.Add(col.ColumnName);
+        else
+            flatCols.Add(col);
     }
 
-    object cellsTopLeft = Invoke(ws, "Cells", 1, 1);
-    object cellsBottomRight = Invoke(ws, "Cells", totalRows, totalCols);
-    object range = GetProp(ws, "Range", cellsTopLeft, cellsBottomRight);
-    SetProp(range, "Value2", buffer);
-    object columns = GetProp(range, "Columns");
-    Invoke(columns, "AutoFit");
-    Marshal.ReleaseComObject(columns);
-    Marshal.ReleaseComObject(range);
-    Marshal.ReleaseComObject(cellsBottomRight);
-    Marshal.ReleaseComObject(cellsTopLeft);
+    int keyCols = (parentKey >= 0) ? 2 : 1;
+    int colCount = keyCols + flatCols.Count;
+    int rowCount = tbl.Rows.Count + 1;
+    object[,] grid = new object[rowCount, colCount];
 
-    for (var r = 0; r < table.Rows.Count; r++)
+    if (parentKey >= 0)
     {
-        var row = table.Rows[r];
-        var rowKey = r + 1;
-        foreach (var nestedCol in nestedColumns)
+        grid[0, 0] = "ParentRowKey";
+        grid[0, 1] = "RowKey";
+    }
+    else
+    {
+        grid[0, 0] = "RowKey";
+    }
+    for (int ci = 0; ci < flatCols.Count; ci++)
+        grid[0, keyCols + ci] = flatCols[ci].ColumnName;
+
+    for (int ri = 0; ri < tbl.Rows.Count; ri++)
+    {
+        System.Data.DataRow dr = tbl.Rows[ri];
+        int rowNum = ri + 1;
+
+        if (parentKey >= 0)
         {
-            if (row[nestedCol] is DataTable nestedTable)
+            grid[rowNum, 0] = parentKey;
+            grid[rowNum, 1] = rowNum;
+        }
+        else
+        {
+            grid[rowNum, 0] = rowNum;
+        }
+
+        for (int ci = 0; ci < flatCols.Count; ci++)
+            grid[rowNum, keyCols + ci] = ToCellValue(dr[flatCols[ci]]);
+    }
+
+    object topLeft = GetProp(newWs, "Cells", 1, 1);
+    object bottomRight = GetProp(newWs, "Cells", rowCount, colCount);
+    object rng = GetProp(newWs, "Range", topLeft, bottomRight);
+    SetProp(rng, "Value2", grid);
+    object rngCols = GetProp(rng, "Columns");
+    Invoke(rngCols, "AutoFit");
+    System.Runtime.InteropServices.Marshal.ReleaseComObject(rngCols);
+    System.Runtime.InteropServices.Marshal.ReleaseComObject(rng);
+    System.Runtime.InteropServices.Marshal.ReleaseComObject(bottomRight);
+    System.Runtime.InteropServices.Marshal.ReleaseComObject(topLeft);
+    System.Runtime.InteropServices.Marshal.ReleaseComObject(newWs);
+
+    for (int ri = 0; ri < tbl.Rows.Count; ri++)
+    {
+        System.Data.DataRow dr = tbl.Rows[ri];
+        foreach (string nestedName in nestedCols)
+        {
+            if (dr[nestedName] is System.Data.DataTable)
             {
-                var childSheetName = $"{sheetName}_{nestedCol}";
-                WriteTable(workbook, nestedTable, childSheetName, usedNames, writtenSheets, rowKey);
+                System.Data.DataTable nestedTbl = (System.Data.DataTable)dr[nestedName];
+                WriteTable(wb, nestedTbl, newSheetName + "_" + nestedName, usedNamesSet, createdList, ri + 1);
             }
         }
     }
-
-    Marshal.ReleaseComObject(ws);
 }
 
-// Excel sheet names: max 31 chars, no [ ] * ? : / \, and must be unique in the workbook.
-string MakeUniqueSheetName(string desired, HashSet<string> usedNames)
+// Une collection Blue Prism peut contenir des types qu'Excel refuse (Image, Binary, Password,
+// TimeSpan) : tout ce qui n'est pas nativement ecrivable part en texte.
+object ToCellValue(object raw)
 {
-    var invalid = new[] { '[', ']', '*', '?', ':', '/', '\\' };
-    var cleaned = new string(desired.Where(ch => !invalid.Contains(ch)).ToArray());
-    if (string.IsNullOrWhiteSpace(cleaned))
-        cleaned = "Sheet";
-    if (cleaned.Length > 31)
-        cleaned = cleaned.Substring(0, 31);
+    if (raw == null || raw is System.DBNull)
+        return null;
+    if (raw is string || raw is bool || raw is System.DateTime
+        || raw is int || raw is long || raw is short || raw is byte
+        || raw is double || raw is float || raw is decimal)
+        return raw;
+    return raw.ToString();
+}
 
-    var name = cleaned;
-    var suffix = 1;
-    while (usedNames.Contains(name))
+// Noms de feuille Excel : 31 caracteres max, pas de [ ] * ? : / \, et uniques dans le classeur.
+string MakeUniqueSheetName(string wanted, System.Collections.Generic.HashSet<string> usedSet)
+{
+    string clean = "";
+    if (wanted != null)
     {
-        var suffixText = "_" + suffix++;
-        var baseLength = Math.Min(cleaned.Length, 31 - suffixText.Length);
-        name = cleaned.Substring(0, baseLength) + suffixText;
+        for (int k = 0; k < wanted.Length; k++)
+        {
+            char ch = wanted[k];
+            if (ch != '[' && ch != ']' && ch != '*' && ch != '?' && ch != ':' && ch != '/' && ch != '\\')
+                clean = clean + ch;
+        }
     }
+    clean = clean.Trim();
+    if (clean.Length == 0)
+        clean = "Sheet";
+    if (clean.Length > 31)
+        clean = clean.Substring(0, 31);
 
-    usedNames.Add(name);
-    return name;
+    string candidate = clean;
+    int sfx = 1;
+    while (usedSet.Contains(candidate))
+    {
+        string sfxText = "_" + sfx.ToString();
+        sfx++;
+        int keepLen = clean.Length;
+        if (keepLen > 31 - sfxText.Length)
+            keepLen = 31 - sfxText.Length;
+        candidate = clean.Substring(0, keepLen) + sfxText;
+    }
+    usedSet.Add(candidate);
+    return candidate;
 }
 
-// --- Late-bound COM helpers (avoid needing the Interop.Excel assembly reference) ---
+// --- Appels COM en liaison tardive : evite toute reference a Microsoft.Office.Interop.Excel ---
 
-object Invoke(object target, string member, params object[] args)
+object Invoke(object comObj, string memberName, params object[] argv)
 {
-    return target.GetType().InvokeMember(member, BindingFlags.InvokeMethod, null, target, args);
+    return comObj.GetType().InvokeMember(memberName,
+        System.Reflection.BindingFlags.InvokeMethod, null, comObj, argv);
 }
 
-object GetProp(object target, string member, params object[] args)
+object GetProp(object comObj, string memberName, params object[] argv)
 {
-    return target.GetType().InvokeMember(member, BindingFlags.GetProperty, null, target, args);
+    return comObj.GetType().InvokeMember(memberName,
+        System.Reflection.BindingFlags.GetProperty, null, comObj, argv);
 }
 
-void SetProp(object target, string member, object value)
+void SetProp(object comObj, string memberName, object val)
 {
-    target.GetType().InvokeMember(member, BindingFlags.SetProperty, null, target, new[] { value });
+    comObj.GetType().InvokeMember(memberName,
+        System.Reflection.BindingFlags.SetProperty, null, comObj, new object[] { val });
 }

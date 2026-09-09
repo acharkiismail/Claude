@@ -22,24 +22,32 @@ apparaît dans les données.
      `Sheet Name` (Texte, optionnel — nom de la feuille racine, "Data" par défaut)
    - **Sorties** : `Sheets Written` (Texte — liste des feuilles créées, séparées
      par des virgules, utile pour tracer ce qui a été généré)
-3. Ajouter un Code Stage sur la page de l'action, langage C#.
-4. **Aucune référence à ajouter.** Le code pilote Excel en liaison tardive
-   (`Type.GetTypeFromProgID("Excel.Application")` + réflexion), pas via
-   l'assembly `Microsoft.Office.Interop.Excel` — ça évite l'erreur "assembly
-   introuvable" quand la PIA n'est pas enregistrée sur la machine. Seul
-   `Excel.Application` doit être un ProgID COM valide, ce qui est le cas dès
-   qu'Excel est installé.
-5. Dans l'onglet **Namespaces** (ou équivalent) du Code Stage — PAS dans la zone
-   de code — ajouter ces espaces de noms un par un (sans le mot-clé `using`) :
-   `System.Collections.Generic`, `System.Data`, `System.Linq`, `System.Reflection`,
-   `System.Runtime.InteropServices`.
-6. Coller le contenu de `CollectionToExcel.cs` dans l'éditeur de code, **à partir
-   de la première ligne `if (Collection == null)`** — ne pas inclure de lignes
-   `using`, et ne pas envelopper le code dans une méthode `private`/`public` :
-   Blue Prism compile le texte collé comme le corps de sa propre méthode
-   générée, donc un modificateur d'accès sur une déclaration de méthode
-   provoque l'erreur *"The modifier 'private' is not valid for this item"*,
-   et un `using` dans le texte provoque des erreurs de syntaxe en cascade.
+3. Ajouter un Code Stage sur la page de l'action, langage C#, et mapper ces mêmes
+   paramètres dans son onglet **Inputs/Outputs**.
+4. **Aucune référence, aucun namespace à ajouter.** Le code pilote Excel en
+   liaison tardive (`Type.GetTypeFromProgID("Excel.Application")` + réflexion),
+   et tous les types sont écrits en nom complet (`System.Collections.Generic.List<string>`,
+   `System.Runtime.InteropServices.Marshal`, ...) sans aucune méthode LINQ.
+5. Coller le contenu de `CollectionToExcel.cs` dans l'éditeur de code, **à partir
+   de la ligne `Sheets_Written = "";`**.
+
+## Pièges du Code Stage Blue Prism (causes d'erreurs de compilation)
+
+Blue Prism compile le texte du Code Stage comme le **corps de sa propre méthode
+générée**. Trois conséquences, qui sont les erreurs rencontrées à la mise en place :
+
+| Erreur | Cause | Correctif appliqué |
+|---|---|---|
+| `Syntax error, '(' expected` | lignes `using` collées dans la zone de code | aucun `using` : types en nom complet |
+| `The modifier 'private' is not valid for this item` | méthodes déclarées avec un modificateur d'accès (elles deviennent des fonctions locales) | méthodes sans `private`/`public` |
+| `The name 'Marshal'/'BindingFlags'/'HashSet<>' does not exist` | namespaces non importés | types en nom complet, LINQ supprimé |
+| `A local or parameter named 'workbook' cannot be declared in this scope` | un paramètre de fonction locale porte le même nom qu'une variable du corps principal | noms distincts partout (`xlBook` / `wb`, ...) |
+| `The out parameter 'Sheets_Written' must be assigned...` | Blue Prism remplace les espaces des Data Items par des underscores | variables `File_Path`, `Sheet_Name`, `Sheets_Written` |
+
+**Important sur les noms** : si vos Data Items s'appellent `File Path` / `Sheet Name` /
+`Sheets Written`, Blue Prism génère les variables C# `File_Path` / `Sheet_Name` /
+`Sheets_Written` — c'est ce que le code utilise. Si vous les nommez autrement,
+adaptez soit les noms dans l'onglet Inputs/Outputs, soit les références dans le code.
 
 ## Repérage des collections imbriquées
 
