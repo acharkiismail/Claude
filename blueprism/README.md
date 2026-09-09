@@ -7,25 +7,39 @@ par le nom de la colonne parente.
 
 ## Forme du résultat
 
-Collection `Emprunts`, avec une colonne imbriquée `Liste Emprunteur` (champs `Nom`, `Prenom`) :
+Collection avec une colonne imbriquée `Emprunteur` (champs `Nom`, `Prenom`). Les
+champs enfants deviennent des colonnes préfixées, et les lignes de la
+sous-collection **s'empilent vers le bas** :
 
-Si aucune ligne n'a plus d'un emprunteur — pas de numéro :
-
-| No Dossier | Montant | Liste Emprunteur-Nom | Liste Emprunteur-Prenom |
+| No Dossier | Montant | Emprunteur-Nom | Emprunteur-Prenom |
 |---|---|---|---|
 | D-001 | 1500 | Tremblay | Marie |
-| D-002 | 2300 | Gagnon | Luc |
+| | | Gagnon | Luc |
+| | | Roy | Anne |
 
-Si au moins une ligne en a plusieurs (2 au maximum sur tout l'export) — numérotation,
-et les lignes qui en ont moins laissent simplement les cases vides :
+Les valeurs du parent ne sont écrites qu'une fois, sur la première ligne de son bloc.
 
-| No Dossier | Montant | Liste Emprunteur-1-Nom | Liste Emprunteur-1-Prenom | Liste Emprunteur-2-Nom | Liste Emprunteur-2-Prenom |
-|---|---|---|---|---|---|
-| D-001 | 1500 | Tremblay | Marie | | |
-| D-002 | 2300 | Gagnon | Luc | Roy | Anne |
+Deux sous-collections de tailles différentes sur le même parent sont indépendantes —
+chacune s'empile dans ses propres colonnes, sans produit cartésien :
 
-L'imbrication est récursive : une sous-collection dans une sous-collection donne
-`Liste Emprunteur-Adresses-1-Ville`, `Liste Emprunteur-Adresses-2-Ville`, etc.
+| No Dossier | Emprunteur-Nom | Cautions-Garant |
+|---|---|---|
+| D-002 | Roy | Banque X |
+| | Cote | |
+| | Bell | |
+
+L'imbrication est récursive (`Emprunteur-Adresses-Ville`), et **chaque sous-ligne
+réserve autant de lignes que ses propres enfants en occupent** — sinon deux
+emprunteurs ayant chacun plusieurs adresses se chevaucheraient :
+
+| No Dossier | Emprunteur-Nom | Emprunteur-Adresses-Ville |
+|---|---|---|
+| D-100 | Roy | Quebec |
+| | | Levis |
+| | Gagnon | Montreal |
+
+Roy occupe deux lignes parce qu'il a deux adresses, donc Gagnon démarre à la
+troisième.
 
 ## Pourquoi cette forme
 
@@ -35,25 +49,28 @@ celle-ci a été retenue :
 - **Une feuille par sous-collection**, reliée par une clé — normalisé et sans
   perte, mais le lecteur doit faire des allers-retours entre feuilles, et les
   filtres et tableaux croisés dynamiques ne traversent pas deux feuilles.
-- **Aplatir en répétant la ligne parent** (comme un `JOIN` SQL) — une ligne par
-  élément enfant. Excel redevient pleinement utilisable, mais les données parent
-  sont dupliquées : un `SUM` sur une colonne de montant donne un total faux,
-  multiplié par le nombre d'enfants. Erreur silencieuse et coûteuse.
-- **Aplatir en colonnes** (retenu) — une ligne par enregistrement parent, les
-  enfants en colonnes. Aucune duplication de ligne, donc aucun risque sur les
-  totaux, et tout reste filtrable et lisible d'un coup d'œil.
+- **Aplatir en répétant la ligne parent** (comme un `JOIN` SQL) — les données
+  parent sont dupliquées sur chaque ligne enfant : un `SUM` sur une colonne de
+  montant donne alors un total faux, multiplié par le nombre d'enfants.
+- **Aplatir en colonnes préfixées, enfants empilés vers le bas** (retenu) — les
+  valeurs du parent n'apparaissent qu'une fois, donc aucun risque sur les totaux,
+  et l'ensemble se lit d'un coup d'œil sur une seule feuille.
 
-Le compromis : le nombre de colonnes croît avec le nombre maximum d'éléments
-imbriqués. Le code refuse l'export au-delà de la limite Excel de 16 384 colonnes,
-avec un message explicite plutôt qu'une erreur COM obscure.
+Le compromis : la lecture par formule ou tableau croisé est moins directe, puisque
+les cellules parent sont vides sur les lignes de continuation. C'est acceptable ici
+parce que la collection principale ne contient qu'un enregistrement — le fichier
+est un rapport à lire, pas une table à agréger.
 
-## Comment le nombre de créneaux est décidé
+## Comment la mise en page est calculée
 
-Le maximum est calculé sur **tout l'export**, pas ligne par ligne — sinon une
-ligne à 1 emprunteur produirait `Liste Emprunteur-Nom` et une ligne à 2
-produirait `Liste Emprunteur-1-Nom`, deux colonnes différentes, et les données ne
-s'aligneraient pas. Le code fait donc trois passes : recensement des maximums,
-construction de l'en-tête, puis remplissage.
+Le code procède en quatre passes : repérage d'un échantillon de schéma par
+collection imbriquée (pour construire l'en-tête même si certaines lignes ont une
+sous-collection vide), construction de l'en-tête aplatie, calcul de la hauteur de
+chaque enregistrement, puis remplissage.
+
+La hauteur d'une ligne est `max(1, hauteur totale de sa plus grande
+sous-collection)`, chaque sous-ligne comptant récursivement sa propre hauteur.
+C'est ce calcul qui garantit qu'aucun bloc n'en écrase un autre.
 
 ## Mise en place dans Blue Prism
 

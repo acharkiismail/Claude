@@ -1,19 +1,26 @@
 // Blue Prism Code Stage — Object Studio action "Write Collection To Excel"
 //
-// Aplatit une collection (y compris ses collections imbriquees) dans UNE SEULE feuille Excel :
-// une ligne par enregistrement parent, et chaque champ d'une sous-collection devient une colonne
-// prefixee par le nom de la colonne parente.
+// Aplatit une collection (y compris ses collections imbriquees) dans UNE SEULE feuille Excel.
+// Chaque champ d'une sous-collection devient une colonne prefixee par le nom de la colonne
+// parente, et les lignes d'une sous-collection s'empilent VERS LE BAS.
 //
-//   Collection "Emprunts" avec une colonne imbriquee "Liste Emprunteur" (champs Nom, Prenom) :
-//     - si aucune ligne n'a plus d'un emprunteur :
-//         No Dossier | Date | Liste Emprunteur-Nom | Liste Emprunteur-Prenom
-//     - si au moins une ligne en a plusieurs (ici 2 au maximum sur tout l'export) :
-//         No Dossier | Date | Liste Emprunteur-1-Nom | Liste Emprunteur-1-Prenom
-//                           | Liste Emprunteur-2-Nom | Liste Emprunteur-2-Prenom
+//   Collection avec une colonne imbriquee "Emprunteur" (champs Nom, Prenom) :
 //
-// Le nombre de creneaux est calcule sur TOUT l'export (pas ligne par ligne), sinon les colonnes
-// ne s'aligneraient pas d'une ligne a l'autre. L'imbrication est recursive : une sous-collection
-// dans une sous-collection donne "Parent-1-Enfant-2-Champ".
+//     No Dossier | Montant | Emprunteur-Nom | Emprunteur-Prenom
+//     D-001      | 1500    | Tremblay       | Marie              <- ligne parent
+//                |         | Gagnon         | Luc                <- 2e emprunteur
+//                |         | Roy            | Anne               <- 3e emprunteur
+//
+// Les valeurs du parent ne sont ecrites qu'une fois, sur la premiere ligne de son bloc.
+//
+// L'imbrication est recursive : "Emprunteur-Adresses-Ville". Chaque sous-ligne reserve autant
+// de lignes que ses propres enfants en occupent, sinon deux emprunteurs ayant chacun plusieurs
+// adresses se chevaucheraient :
+//
+//     No Dossier | Emprunteur-Nom | Emprunteur-Adresses-Ville
+//     D-100      | Roy            | Quebec
+//                |                | Levis
+//                | Gagnon         | Montreal
 //
 // Wiring in Blue Prism (Code Stage > onglet Inputs/Outputs) — les noms C# ci-dessous doivent
 // correspondre EXACTEMENT a la colonne "Name" de cet onglet. Blue Prism remplace les espaces
@@ -29,7 +36,8 @@
 //   - Excel est pilote en COM tardif via le ProgID "Excel.Application" (il faut seulement
 //     qu'Excel soit installe sur la machine, design ET Runtime Resource) ;
 //   - tous les types sont ecrits en nom complet et rien ne vient de System.Core.dll
-//     (donc ni LINQ ni HashSet<T> — le Code Stage ne reference pas cet assembly).
+//     (donc ni LINQ, ni HashSet<T>, ni Dictionary<,> — le Code Stage ne reference pas cet
+//     assembly, d'ou l'emploi de System.Collections.Hashtable).
 //
 // A coller tel quel dans la zone de code du Code Stage, en commencant a la ligne
 // `Sheets_Written = "";` — sans lignes `using`, sans methode englobante, et sans modificateur
@@ -43,38 +51,48 @@ if (Collection == null)
 if (File_Path == null || File_Path.Trim().Length == 0)
     throw new System.InvalidOperationException("File Path est obligatoire.");
 
-// Passe 1 : parcourir tout l'export pour savoir, par chemin de collection imbriquee, combien de
-// creneaux reserver (colMaxCounts) et sur quelle sous-collection lire le schema (colSamples).
-// Hashtable plutot que Dictionary<> : Dictionary<> vit dans System.Core.dll, pas Hashtable.
-System.Collections.Hashtable colMaxCounts = new System.Collections.Hashtable();
+// Passe 1 : retenir une sous-collection non vide par chemin imbrique, pour en lire le schema
+// au moment de construire l'entete. Le chemin ("Emprunteur.Adresses") ignore la position des
+// lignes, puisque toutes les sous-collections d'une meme colonne partagent leur schema.
 System.Collections.Hashtable colSamples = new System.Collections.Hashtable();
-ScanTable(Collection, "", colMaxCounts, colSamples);
+ScanSamples(Collection, "", colSamples);
 
-// Passe 2 : deduire l'entete aplatie complete.
+// Passe 2 : entete aplatie.
 System.Collections.Generic.List<string> headerList = new System.Collections.Generic.List<string>();
-BuildHeaders(Collection, "", "", colMaxCounts, colSamples, headerList);
+BuildHeaders(Collection, "", "", colSamples, headerList);
 
 if (headerList.Count == 0)
     throw new System.InvalidOperationException("La collection ne contient aucune colonne exportable.");
 if (headerList.Count > 16384)
     throw new System.InvalidOperationException("L'aplatissement produit " + headerList.Count.ToString()
-        + " colonnes, au-dela de la limite Excel de 16384. Reduisez le nombre de colonnes exportees"
-        + " ou repassez sur un export en feuilles separees.");
+        + " colonnes, au-dela de la limite Excel de 16384.");
 
 System.Collections.Hashtable headerPos = new System.Collections.Hashtable();
 for (int hi = 0; hi < headerList.Count; hi++)
     headerPos[headerList[hi]] = hi;
 
-// Passe 3 : remplir la grille, une ligne par enregistrement parent.
-int totalCols = headerList.Count;
-int totalRows = Collection.Rows.Count + 1;
-object[,] cellGrid = new object[totalRows, totalCols];
+// Passe 3 : hauteur de chaque enregistrement parent (nombre de lignes qu'il occupe).
+int dataRows = 0;
+for (int ri = 0; ri < Collection.Rows.Count; ri++)
+    dataRows = dataRows + RowHeight(Collection.Rows[ri]);
 
+int totalCols = headerList.Count;
+int totalRows = dataRows + 1;
+if (totalRows > 1048576)
+    throw new System.InvalidOperationException("L'aplatissement produit " + totalRows.ToString()
+        + " lignes, au-dela de la limite Excel de 1048576.");
+
+object[,] cellGrid = new object[totalRows, totalCols];
 for (int hi = 0; hi < totalCols; hi++)
     cellGrid[0, hi] = headerList[hi];
 
+// Passe 4 : remplissage. Chaque enregistrement parent demarre sous le bloc du precedent.
+int gridCursor = 1;
 for (int ri = 0; ri < Collection.Rows.Count; ri++)
-    EmitRow(Collection.Rows[ri], "", "", cellGrid, ri + 1, headerPos, colMaxCounts);
+{
+    EmitRow(Collection.Rows[ri], "", "", cellGrid, gridCursor, headerPos);
+    gridCursor = gridCursor + RowHeight(Collection.Rows[ri]);
+}
 
 string rootSheet = SafeSheetName(Sheet_Name);
 
@@ -144,13 +162,8 @@ finally
     System.GC.WaitForPendingFinalizers();
 }
 
-// --- Passe 1 : recensement des collections imbriquees -------------------------------------
-// counts[chemin] = nombre max de lignes vues dans cette sous-collection sur tout l'export.
-// samps[chemin] = une sous-collection non vide, dont on lira le schema pour l'entete.
-// Le chemin ignore les numeros de creneau ("Liste Emprunteur.Adresses"), pour que tous les
-// creneaux d'une meme liste partagent la meme mise en page.
-void ScanTable(System.Data.DataTable tbl, string spath,
-    System.Collections.Hashtable counts, System.Collections.Hashtable samps)
+// --- Passe 1 : un echantillon de schema par chemin imbrique -------------------------------
+void ScanSamples(System.Data.DataTable tbl, string spath, System.Collections.Hashtable samps)
 {
     foreach (System.Data.DataColumn dcol in tbl.Columns)
     {
@@ -165,26 +178,17 @@ void ScanTable(System.Data.DataTable tbl, string spath,
                 continue;
 
             System.Data.DataTable sub = (System.Data.DataTable)cell;
-
-            int seen = 0;
-            if (counts.Contains(cpath))
-                seen = (int)counts[cpath];
-            if (sub.Rows.Count > seen)
-                seen = sub.Rows.Count;
-            counts[cpath] = seen;
-
             if (!samps.Contains(cpath) && sub.Columns.Count > 0)
                 samps[cpath] = sub;
 
-            ScanTable(sub, cpath + ".", counts, samps);
+            ScanSamples(sub, cpath + ".", samps);
         }
     }
 }
 
 // --- Passe 2 : entete aplatie --------------------------------------------------------------
 void BuildHeaders(System.Data.DataTable schemaTbl, string disp, string spath,
-    System.Collections.Hashtable counts, System.Collections.Hashtable samps,
-    System.Collections.Generic.List<string> heads)
+    System.Collections.Hashtable samps, System.Collections.Generic.List<string> heads)
 {
     foreach (System.Data.DataColumn dcol in schemaTbl.Columns)
     {
@@ -195,32 +199,45 @@ void BuildHeaders(System.Data.DataTable schemaTbl, string disp, string spath,
         }
 
         string cpath = spath + dcol.ColumnName;
-        int slots = 0;
-        if (counts.Contains(cpath))
-            slots = (int)counts[cpath];
-        if (slots <= 0 || !samps.Contains(cpath))
+        if (!samps.Contains(cpath))
             continue;
 
         System.Data.DataTable sample = (System.Data.DataTable)samps[cpath];
-        if (slots == 1)
-        {
-            BuildHeaders(sample, disp + dcol.ColumnName + "-", cpath + ".", counts, samps, heads);
-        }
-        else
-        {
-            for (int slot = 1; slot <= slots; slot++)
-                BuildHeaders(sample, disp + dcol.ColumnName + "-" + slot.ToString() + "-",
-                    cpath + ".", counts, samps, heads);
-        }
+        BuildHeaders(sample, disp + dcol.ColumnName + "-", cpath + ".", samps, heads);
     }
 }
 
-// --- Passe 3 : valeurs ---------------------------------------------------------------------
-// Reconstruit les memes noms de colonnes que BuildHeaders et place chaque valeur via headerPos.
-// Un nom absent de l'entete (schema imbrique divergent) est simplement ignore.
+// --- Passe 3 : hauteur d'une ligne ---------------------------------------------------------
+// Une ligne occupe au moins une ligne Excel ; si elle porte des sous-collections, elle occupe
+// la hauteur de la plus haute d'entre elles (chaque sous-ligne comptant sa propre hauteur).
+int RowHeight(System.Data.DataRow hrow)
+{
+    int tallest = 1;
+    foreach (System.Data.DataColumn dcol in hrow.Table.Columns)
+    {
+        if (dcol.DataType != typeof(System.Data.DataTable))
+            continue;
+
+        object cell = hrow[dcol];
+        if (!(cell is System.Data.DataTable))
+            continue;
+
+        System.Data.DataTable sub = (System.Data.DataTable)cell;
+        int stacked = 0;
+        for (int k = 0; k < sub.Rows.Count; k++)
+            stacked = stacked + RowHeight(sub.Rows[k]);
+
+        if (stacked > tallest)
+            tallest = stacked;
+    }
+    return tallest;
+}
+
+// --- Passe 4 : valeurs ---------------------------------------------------------------------
+// Les champs plats vont sur gridRow ; chaque sous-ligne demarre sous la precedente, en
+// reservant sa propre hauteur. Un nom absent de l'entete est ignore.
 void EmitRow(System.Data.DataRow drow, string disp, string spath,
-    object[,] cells, int gridRow,
-    System.Collections.Hashtable hpos, System.Collections.Hashtable counts)
+    object[,] cells, int gridRow, System.Collections.Hashtable hpos)
 {
     foreach (System.Data.DataColumn dcol in drow.Table.Columns)
     {
@@ -232,27 +249,19 @@ void EmitRow(System.Data.DataRow drow, string disp, string spath,
             continue;
         }
 
-        string cpath = spath + dcol.ColumnName;
-        int slots = 0;
-        if (counts.Contains(cpath))
-            slots = (int)counts[cpath];
-        if (slots <= 0)
-            continue;
-
         object cell = drow[dcol];
         if (!(cell is System.Data.DataTable))
             continue;
 
         System.Data.DataTable sub = (System.Data.DataTable)cell;
-        for (int k = 0; k < sub.Rows.Count && k < slots; k++)
-        {
-            string childDisp;
-            if (slots == 1)
-                childDisp = disp + dcol.ColumnName + "-";
-            else
-                childDisp = disp + dcol.ColumnName + "-" + (k + 1).ToString() + "-";
+        string childDisp = disp + dcol.ColumnName + "-";
+        string childPath = spath + dcol.ColumnName + ".";
 
-            EmitRow(sub.Rows[k], childDisp, cpath + ".", cells, gridRow, hpos, counts);
+        int cursor = gridRow;
+        for (int k = 0; k < sub.Rows.Count; k++)
+        {
+            EmitRow(sub.Rows[k], childDisp, childPath, cells, cursor, hpos);
+            cursor = cursor + RowHeight(sub.Rows[k]);
         }
     }
 }
