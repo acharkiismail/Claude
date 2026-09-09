@@ -23,11 +23,12 @@ apparaît dans les données.
    - **Sorties** : `Sheets Written` (Texte — liste des feuilles créées, séparées
      par des virgules, utile pour tracer ce qui a été généré)
 3. Ajouter un Code Stage sur la page de l'action, langage C#.
-4. Ajouter la référence `Microsoft.Office.Interop.Excel` au Code Stage. Cette DLL
-   fait partie d'Excel — si Excel est installé sur le poste (c'est le cas partout
-   où le VBO Excel natif de Blue Prism est utilisé), elle est déjà présente sur
-   le disque et il suffit de la référencer via l'onglet Références du Code Stage
-   (aucun téléchargement nécessaire).
+4. **Aucune référence à ajouter.** Le code pilote Excel en liaison tardive
+   (`Type.GetTypeFromProgID("Excel.Application")` + réflexion), pas via
+   l'assembly `Microsoft.Office.Interop.Excel` — ça évite l'erreur "assembly
+   introuvable" quand la PIA n'est pas enregistrée sur la machine. Seul
+   `Excel.Application` doit être un ProgID COM valide, ce qui est le cas dès
+   qu'Excel est installé.
 5. Coller le contenu de `CollectionToExcel.cs` dans l'éditeur de code.
 
 ## Repérage des collections imbriquées

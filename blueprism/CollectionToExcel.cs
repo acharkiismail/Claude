@@ -8,11 +8,12 @@
 //   Outputs:
 //     Sheets Written (Text)      -> bound to C# variable `SheetsWritten` (comma-separated list)
 //
-//   Reference needed on the Code Stage: Microsoft.Office.Interop.Excel — this is the Primary
-//   Interop Assembly that ships with Microsoft Excel, so nothing needs to be downloaded: if
-//   Excel is installed on the machine (true wherever Blue Prism's own MS Excel VBO is used),
-//   the DLL already exists on disk (typically under the GAC or the Office install folder) and
-//   just needs to be added as a reference on the Code Stage.
+//   References needed on the Code Stage: NONE beyond the .NET Framework defaults. This drives
+//   Excel through late-bound COM (Type.GetTypeFromProgID + reflection), not the
+//   Microsoft.Office.Interop.Excel assembly, so there is nothing to add as a reference and
+//   nothing to download — it only needs Excel to be installed on the machine (design AND the
+//   Runtime Resource that will run this process), since that's what registers the
+//   "Excel.Application" COM ProgID.
 //
 //   Blue Prism stores a nested Collection field internally as a System.Data.DataTable value
 //   inside the parent DataTable's cell, so a column whose DataType is DataTable is a nested
@@ -25,8 +26,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
-using Excel = Microsoft.Office.Interop.Excel;
 
 private void Main()
 {
@@ -35,37 +36,48 @@ private void Main()
     if (string.IsNullOrWhiteSpace(FilePath))
         throw new InvalidOperationException("File Path is required.");
 
+    var excelType = Type.GetTypeFromProgID("Excel.Application");
+    if (excelType == null)
+        throw new InvalidOperationException("Microsoft Excel n'est pas installé sur cette machine (ProgID 'Excel.Application' introuvable).");
+
     var rootSheetName = string.IsNullOrWhiteSpace(SheetName) ? "Data" : SheetName;
     var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     var writtenSheets = new List<string>();
 
-    var excelApp = new Excel.Application();
-    excelApp.Visible = false;
-    excelApp.DisplayAlerts = false;
-    var workbook = excelApp.Workbooks.Add();
+    object excelApp = Activator.CreateInstance(excelType);
+    SetProp(excelApp, "Visible", false);
+    SetProp(excelApp, "DisplayAlerts", false);
+
+    object workbooks = GetProp(excelApp, "Workbooks");
+    object workbook = Invoke(workbooks, "Add");
 
     try
     {
         WriteTable(workbook, Collection, rootSheetName, usedNames, writtenSheets, parentRowKey: null);
 
         // Workbooks.Add() starts with a default blank sheet — drop anything we didn't write.
-        for (var i = workbook.Sheets.Count; i >= 1; i--)
+        object sheets = GetProp(workbook, "Sheets");
+        var sheetCount = (int)GetProp(sheets, "Count");
+        for (var i = sheetCount; i >= 1; i--)
         {
-            var sheet = (Excel.Worksheet)workbook.Sheets[i];
-            if (!writtenSheets.Contains(sheet.Name))
-                sheet.Delete();
-            else
-                Marshal.ReleaseComObject(sheet);
+            object sheet = Invoke(sheets, "Item", i);
+            var name = (string)GetProp(sheet, "Name");
+            if (!writtenSheets.Contains(name))
+                Invoke(sheet, "Delete");
+            Marshal.ReleaseComObject(sheet);
         }
+        Marshal.ReleaseComObject(sheets);
 
-        workbook.SaveAs(FilePath, Excel.XlFileFormat.xlOpenXMLWorkbook);
+        // xlOpenXMLWorkbook = 51 (.xlsx)
+        Invoke(workbook, "SaveAs", FilePath, 51);
         SheetsWritten = string.Join(",", writtenSheets);
     }
     finally
     {
-        workbook.Close(false);
-        excelApp.Quit();
+        Invoke(workbook, "Close", false);
+        Invoke(excelApp, "Quit");
         Marshal.ReleaseComObject(workbook);
+        Marshal.ReleaseComObject(workbooks);
         Marshal.ReleaseComObject(excelApp);
         GC.Collect();
         GC.WaitForPendingFinalizers();
@@ -74,12 +86,18 @@ private void Main()
 
 // Writes one DataTable to its own sheet, then recurses into any nested-collection columns
 // so multi-level nesting each lands on its own sheet.
-private void WriteTable(Excel.Workbook workbook, DataTable table, string desiredSheetName,
+private void WriteTable(object workbook, DataTable table, string desiredSheetName,
     HashSet<string> usedNames, List<string> writtenSheets, int? parentRowKey)
 {
     var sheetName = MakeUniqueSheetName(desiredSheetName, usedNames);
-    var ws = (Excel.Worksheet)workbook.Sheets.Add(After: workbook.Sheets[workbook.Sheets.Count]);
-    ws.Name = sheetName;
+
+    object sheets = GetProp(workbook, "Sheets");
+    var sheetCount = (int)GetProp(sheets, "Count");
+    object afterSheet = Invoke(sheets, "Item", sheetCount);
+    object ws = Invoke(sheets, "Add", Type.Missing, afterSheet, Type.Missing, Type.Missing);
+    SetProp(ws, "Name", sheetName);
+    Marshal.ReleaseComObject(afterSheet);
+    Marshal.ReleaseComObject(sheets);
     writtenSheets.Add(sheetName);
 
     var nestedColumns = table.Columns.Cast<DataColumn>()
@@ -119,10 +137,16 @@ private void WriteTable(Excel.Workbook workbook, DataTable table, string desired
         }
     }
 
-    var range = ws.Range[ws.Cells[1, 1], ws.Cells[totalRows, totalCols]];
-    range.Value2 = buffer;
-    range.Columns.AutoFit();
+    object cellsTopLeft = Invoke(ws, "Cells", 1, 1);
+    object cellsBottomRight = Invoke(ws, "Cells", totalRows, totalCols);
+    object range = GetProp(ws, "Range", cellsTopLeft, cellsBottomRight);
+    SetProp(range, "Value2", buffer);
+    object columns = GetProp(range, "Columns");
+    Invoke(columns, "AutoFit");
+    Marshal.ReleaseComObject(columns);
     Marshal.ReleaseComObject(range);
+    Marshal.ReleaseComObject(cellsBottomRight);
+    Marshal.ReleaseComObject(cellsTopLeft);
 
     for (var r = 0; r < table.Rows.Count; r++)
     {
@@ -162,4 +186,21 @@ private string MakeUniqueSheetName(string desired, HashSet<string> usedNames)
 
     usedNames.Add(name);
     return name;
+}
+
+// --- Late-bound COM helpers (avoid needing the Interop.Excel assembly reference) ---
+
+private object Invoke(object target, string member, params object[] args)
+{
+    return target.GetType().InvokeMember(member, BindingFlags.InvokeMethod, null, target, args);
+}
+
+private object GetProp(object target, string member, params object[] args)
+{
+    return target.GetType().InvokeMember(member, BindingFlags.GetProperty, null, target, args);
+}
+
+private void SetProp(object target, string member, object value)
+{
+    target.GetType().InvokeMember(member, BindingFlags.SetProperty, null, target, new[] { value });
 }
