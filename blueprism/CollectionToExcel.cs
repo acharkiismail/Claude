@@ -8,85 +8,83 @@
 //   Outputs:
 //     Sheets Written (Text)      -> bound to C# variable `SheetsWritten` (comma-separated list)
 //
-//   References needed on the Code Stage: NONE beyond the .NET Framework defaults. This drives
-//   Excel through late-bound COM (Type.GetTypeFromProgID + reflection), not the
-//   Microsoft.Office.Interop.Excel assembly, so there is nothing to add as a reference and
-//   nothing to download — it only needs Excel to be installed on the machine (design AND the
-//   Runtime Resource that will run this process), since that's what registers the
-//   "Excel.Application" COM ProgID.
+//   References needed on the Code Stage: NONE. This drives Excel through late-bound COM
+//   (Type.GetTypeFromProgID + reflection), not the Microsoft.Office.Interop.Excel assembly —
+//   it only needs Excel installed on the machine (design AND the Runtime Resource that will
+//   run this process), since that's what registers the "Excel.Application" COM ProgID.
+//
+//   IMPORTANT — do NOT paste "using" lines into the code box: Blue Prism's Code Stage compiles
+//   this text as the body of its own generated method, so `using` directives and access
+//   modifiers (`private`/`public`) on method declarations are rejected. Instead, in the Code
+//   Stage editor add these to the Namespaces list (its own separate field, not the code box):
+//     System.Collections.Generic
+//     System.Data
+//     System.Linq
+//     System.Reflection
+//     System.Runtime.InteropServices
 //
 //   Blue Prism stores a nested Collection field internally as a System.Data.DataTable value
 //   inside the parent DataTable's cell, so a column whose DataType is DataTable is a nested
 //   collection field — that's the signal this code uses to decide what gets its own sheet.
 //
-// Paste everything below into the Code Stage's code editor. `Main()` is the entry point Blue
-// Prism calls; the other methods are ordinary helpers in the same Code Stage.
+// Paste everything below (starting at the first "if") into the Code Stage's code editor —
+// no wrapping method, no "using" lines, no access modifiers on the helper methods below.
 
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
+if (Collection == null)
+    throw new InvalidOperationException("Input collection is not set.");
+if (string.IsNullOrWhiteSpace(FilePath))
+    throw new InvalidOperationException("File Path is required.");
 
-private void Main()
+var excelType = Type.GetTypeFromProgID("Excel.Application");
+if (excelType == null)
+    throw new InvalidOperationException("Microsoft Excel n'est pas installé sur cette machine (ProgID 'Excel.Application' introuvable).");
+
+var rootSheetName = string.IsNullOrWhiteSpace(SheetName) ? "Data" : SheetName;
+var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+var writtenSheets = new List<string>();
+
+object excelApp = Activator.CreateInstance(excelType);
+SetProp(excelApp, "Visible", false);
+SetProp(excelApp, "DisplayAlerts", false);
+
+object workbooks = GetProp(excelApp, "Workbooks");
+object workbook = Invoke(workbooks, "Add");
+
+try
 {
-    if (Collection == null)
-        throw new InvalidOperationException("Input collection is not set.");
-    if (string.IsNullOrWhiteSpace(FilePath))
-        throw new InvalidOperationException("File Path is required.");
+    WriteTable(workbook, Collection, rootSheetName, usedNames, writtenSheets, parentRowKey: null);
 
-    var excelType = Type.GetTypeFromProgID("Excel.Application");
-    if (excelType == null)
-        throw new InvalidOperationException("Microsoft Excel n'est pas installé sur cette machine (ProgID 'Excel.Application' introuvable).");
-
-    var rootSheetName = string.IsNullOrWhiteSpace(SheetName) ? "Data" : SheetName;
-    var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-    var writtenSheets = new List<string>();
-
-    object excelApp = Activator.CreateInstance(excelType);
-    SetProp(excelApp, "Visible", false);
-    SetProp(excelApp, "DisplayAlerts", false);
-
-    object workbooks = GetProp(excelApp, "Workbooks");
-    object workbook = Invoke(workbooks, "Add");
-
-    try
+    // Workbooks.Add() starts with a default blank sheet — drop anything we didn't write.
+    object sheets = GetProp(workbook, "Sheets");
+    var sheetCount = (int)GetProp(sheets, "Count");
+    for (var i = sheetCount; i >= 1; i--)
     {
-        WriteTable(workbook, Collection, rootSheetName, usedNames, writtenSheets, parentRowKey: null);
-
-        // Workbooks.Add() starts with a default blank sheet — drop anything we didn't write.
-        object sheets = GetProp(workbook, "Sheets");
-        var sheetCount = (int)GetProp(sheets, "Count");
-        for (var i = sheetCount; i >= 1; i--)
-        {
-            object sheet = Invoke(sheets, "Item", i);
-            var name = (string)GetProp(sheet, "Name");
-            if (!writtenSheets.Contains(name))
-                Invoke(sheet, "Delete");
-            Marshal.ReleaseComObject(sheet);
-        }
-        Marshal.ReleaseComObject(sheets);
-
-        // xlOpenXMLWorkbook = 51 (.xlsx)
-        Invoke(workbook, "SaveAs", FilePath, 51);
-        SheetsWritten = string.Join(",", writtenSheets);
+        object sheet = Invoke(sheets, "Item", i);
+        var name = (string)GetProp(sheet, "Name");
+        if (!writtenSheets.Contains(name))
+            Invoke(sheet, "Delete");
+        Marshal.ReleaseComObject(sheet);
     }
-    finally
-    {
-        Invoke(workbook, "Close", false);
-        Invoke(excelApp, "Quit");
-        Marshal.ReleaseComObject(workbook);
-        Marshal.ReleaseComObject(workbooks);
-        Marshal.ReleaseComObject(excelApp);
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-    }
+    Marshal.ReleaseComObject(sheets);
+
+    // xlOpenXMLWorkbook = 51 (.xlsx)
+    Invoke(workbook, "SaveAs", FilePath, 51);
+    SheetsWritten = string.Join(",", writtenSheets);
+}
+finally
+{
+    Invoke(workbook, "Close", false);
+    Invoke(excelApp, "Quit");
+    Marshal.ReleaseComObject(workbook);
+    Marshal.ReleaseComObject(workbooks);
+    Marshal.ReleaseComObject(excelApp);
+    GC.Collect();
+    GC.WaitForPendingFinalizers();
 }
 
 // Writes one DataTable to its own sheet, then recurses into any nested-collection columns
 // so multi-level nesting each lands on its own sheet.
-private void WriteTable(object workbook, DataTable table, string desiredSheetName,
+void WriteTable(object workbook, DataTable table, string desiredSheetName,
     HashSet<string> usedNames, List<string> writtenSheets, int? parentRowKey)
 {
     var sheetName = MakeUniqueSheetName(desiredSheetName, usedNames);
@@ -166,7 +164,7 @@ private void WriteTable(object workbook, DataTable table, string desiredSheetNam
 }
 
 // Excel sheet names: max 31 chars, no [ ] * ? : / \, and must be unique in the workbook.
-private string MakeUniqueSheetName(string desired, HashSet<string> usedNames)
+string MakeUniqueSheetName(string desired, HashSet<string> usedNames)
 {
     var invalid = new[] { '[', ']', '*', '?', ':', '/', '\\' };
     var cleaned = new string(desired.Where(ch => !invalid.Contains(ch)).ToArray());
@@ -190,17 +188,17 @@ private string MakeUniqueSheetName(string desired, HashSet<string> usedNames)
 
 // --- Late-bound COM helpers (avoid needing the Interop.Excel assembly reference) ---
 
-private object Invoke(object target, string member, params object[] args)
+object Invoke(object target, string member, params object[] args)
 {
     return target.GetType().InvokeMember(member, BindingFlags.InvokeMethod, null, target, args);
 }
 
-private object GetProp(object target, string member, params object[] args)
+object GetProp(object target, string member, params object[] args)
 {
     return target.GetType().InvokeMember(member, BindingFlags.GetProperty, null, target, args);
 }
 
-private void SetProp(object target, string member, object value)
+void SetProp(object target, string member, object value)
 {
     target.GetType().InvokeMember(member, BindingFlags.SetProperty, null, target, new[] { value });
 }

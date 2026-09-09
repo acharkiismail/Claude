@@ -29,7 +29,17 @@ apparaît dans les données.
    introuvable" quand la PIA n'est pas enregistrée sur la machine. Seul
    `Excel.Application` doit être un ProgID COM valide, ce qui est le cas dès
    qu'Excel est installé.
-5. Coller le contenu de `CollectionToExcel.cs` dans l'éditeur de code.
+5. Dans l'onglet **Namespaces** (ou équivalent) du Code Stage — PAS dans la zone
+   de code — ajouter ces espaces de noms un par un (sans le mot-clé `using`) :
+   `System.Collections.Generic`, `System.Data`, `System.Linq`, `System.Reflection`,
+   `System.Runtime.InteropServices`.
+6. Coller le contenu de `CollectionToExcel.cs` dans l'éditeur de code, **à partir
+   de la première ligne `if (Collection == null)`** — ne pas inclure de lignes
+   `using`, et ne pas envelopper le code dans une méthode `private`/`public` :
+   Blue Prism compile le texte collé comme le corps de sa propre méthode
+   générée, donc un modificateur d'accès sur une déclaration de méthode
+   provoque l'erreur *"The modifier 'private' is not valid for this item"*,
+   et un `using` dans le texte provoque des erreurs de syntaxe en cascade.
 
 ## Repérage des collections imbriquées
 
