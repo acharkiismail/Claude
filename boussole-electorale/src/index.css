@@ -21,11 +21,11 @@
 :root {
   color-scheme: light;
 
-  --party-caq: #0e93b0;
-  --party-pq: #2b4a9e;
+  --party-caq: #0d9aa8;
+  --party-pq: #2f6be0;
   --party-plq: #b91c1c;
   --party-qs: #ef8617;
-  --party-pcq: #7c3aed;
+  --party-pcq: #14276b;
 
   --accent: #0f766e;
   --accent-strong: #0b5b55;
@@ -54,11 +54,11 @@
   :root {
     color-scheme: dark;
 
-    --party-caq: #2e93b3;
-    --party-pq: #3a5ce0;
-    --party-plq: #d64848;
-    --party-qs: #a88f1f;
-    --party-pcq: #a83f9e;
+    --party-caq: #26a89a;
+    --party-pq: #5b8ae8;
+    --party-plq: #d8504f;
+    --party-qs: #e0862f;
+    --party-pcq: #5a5fd8;
 
     --accent: #2dd4bf;
     --accent-strong: #5eead4;

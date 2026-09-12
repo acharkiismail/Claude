@@ -1,6 +1,6 @@
 import meta from "../data/meta.json";
 
-export default function Intro({ onStart, statementCount, themeCount }) {
+export default function Intro({ onStart, statementCount, shortCount, themeCount }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:py-16 sm:px-6">
       <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--accent)" }}>
@@ -93,14 +93,28 @@ export default function Intro({ onStart, statementCount, themeCount }) {
         </div>
       </details>
 
-      <button
-        type="button"
-        onClick={onStart}
-        className="mt-8 w-full rounded-xl px-6 py-3.5 text-base font-semibold shadow-sm transition-transform active:scale-[0.99] sm:w-auto"
-        style={{ backgroundColor: "var(--accent)", color: "var(--on-accent)" }}
-      >
-        Commencer →
-      </button>
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <button
+          type="button"
+          onClick={() => onStart("short")}
+          className="rounded-xl px-6 py-3.5 text-base font-semibold shadow-sm transition-transform active:scale-[0.99]"
+          style={{ backgroundColor: "var(--accent)", color: "var(--on-accent)" }}
+        >
+          Version rapide — {shortCount} questions, 2 min →
+        </button>
+        <button
+          type="button"
+          onClick={() => onStart("full")}
+          className="rounded-xl border px-6 py-3.5 text-base font-semibold transition-transform active:scale-[0.99]"
+          style={{ borderColor: "var(--hairline)", color: "var(--ink-secondary)" }}
+        >
+          Version complète — {statementCount} questions
+        </button>
+      </div>
+      <p className="mt-3 text-xs text-[var(--ink-muted)]">
+        La version rapide retient les {shortCount} énoncés qui départagent le plus les partis, un
+        par thème. Vous pourrez continuer avec le questionnaire complet après votre résultat.
+      </p>
 
       <p className="mt-8 text-xs text-[var(--ink-muted)]">
         Positions des partis relevées le {meta.dataDateLabel}. La campagne étant en cours, elles

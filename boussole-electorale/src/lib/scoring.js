@@ -138,6 +138,47 @@ export function computeMatchHighlights(statements, answers, partyId, count = 3) 
   return { agreements, disagreements };
 }
 
+// Version courte : les énoncés qui départagent le plus les partis, un par thème.
+// L'écart-type des positions mesure ce pouvoir discriminant — un énoncé sur lequel
+// tout le monde s'entend ne sert à rien pour trancher, et fait abandonner un
+// visiteur venu d'un lien.
+export function selectShortStatements(statements, count = 8) {
+  const spread = (statement) => {
+    const values = Object.values(statement.positions)
+      .filter(isCounted)
+      .map((p) => p.value);
+    if (values.length < 2) return 0;
+    const mean = values.reduce((a, b) => a + b, 0) / values.length;
+    return Math.sqrt(values.reduce((a, v) => a + (v - mean) ** 2, 0) / values.length);
+  };
+
+  const bestPerTheme = new Map();
+  for (const statement of statements) {
+    const current = bestPerTheme.get(statement.themeId);
+    if (!current || spread(statement) > spread(current)) {
+      bestPerTheme.set(statement.themeId, statement);
+    }
+  }
+
+  const selected = [...bestPerTheme.values()]
+    .sort((a, b) => spread(b) - spread(a))
+    .slice(0, count);
+  const selectedIds = new Set(selected.map((s) => s.id));
+  return statements.filter((s) => selectedIds.has(s.id));
+}
+
+// Les enjeux où l'utilisateur est le plus proche et le plus loin d'un parti.
+// C'est ce qui se raconte ("proche sur la santé, loin sur l'identité"), bien plus
+// qu'un pourcentage global.
+export function themeExtremes(themeAffinities, themes) {
+  const scored = themes
+    .map((t) => ({ theme: t, value: themeAffinities[t.id] }))
+    .filter((e) => e.value != null);
+  if (scored.length === 0) return { closest: null, furthest: null };
+  const sorted = [...scored].sort((a, b) => b.value - a.value);
+  return { closest: sorted[0], furthest: sorted[sorted.length - 1] };
+}
+
 // Un énoncé sur lequel tous les partis documentés tiennent la même position ne
 // départage personne. Plutôt que de le masquer, on le signale : "les cinq partis
 // s'entendent" est en soi une information sur la campagne.

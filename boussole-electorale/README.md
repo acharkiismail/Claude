@@ -2,7 +2,7 @@
 
 Outil web interactif permettant de découvrir son affinité avec les 5 principaux partis en
 lice pour l'élection générale québécoise du 5 octobre 2026 (CAQ, PQ, PLQ, QS, PCQ), à partir
-de 29 énoncés répartis sur 10 enjeux de campagne. La méthodologie s'inspire de
+de 30 énoncés répartis sur 10 enjeux de campagne. La méthodologie s'inspire de
 [smartvote](https://www.smartvote.ch) (Suisse) et du [Wahl-O-Mat](https://www.wahl-o-mat.de)
 (Allemagne), plutôt que de reproduire un outil existant : énoncés à fort pouvoir
 discriminant entre partis, contexte factuel par énoncé, pondération par thème, et un profil
@@ -20,7 +20,7 @@ npm run build    # build de production dans dist/
 
 - `src/data/parties.json` — les 5 partis (nom, chef, référence de couleur CSS).
 - `src/data/themes.json` — les 10 thèmes de l'élection (utilisés aussi comme axes du radar).
-- `src/data/statements.json` — les 29 énoncés, chacun avec un `context` factuel, et pour
+- `src/data/statements.json` — les 30 énoncés, chacun avec un `context` factuel, et pour
   chaque parti une position (échelle 1-5), une source (paraphrasée, non verbatim) et un niveau
   de fiabilité : `sourced`, `inferred`, ou `unknown` (exclu du calcul).
 - `src/lib/scoring.js` — calcul de l'affinité (distance euclidienne pondérée, normalisée en %),
@@ -46,7 +46,7 @@ npm run build    # build de production dans dist/
   audit sur 4000 électeurs simulés montrait que le PLQ, dont 9 positions manquaient et étaient
   ramenées au centre de l'échelle, arrivait en tête dans 43 % des cas — un artefact de collecte,
   pas de politique. Après recherche ciblée et exclusion des positions restées inconnues, il tombe
-  à 24,8 %. Le classement affiche la complétude des données de chaque parti (ex. « 26/29 doc. »).
+  à 24,8 %. Le classement affiche la complétude des données de chaque parti (ex. « 26/30 doc. »).
 - Affinité par thème (radar) : le même calcul de distance, restreint aux énoncés d'un thème,
   donne un score 0-100 par thème et par parti. Un score d'accord moyen a été écarté : dans trois
   thèmes, les énoncés pointent dans des directions opposées, si bien qu'un répondant disant
@@ -63,22 +63,32 @@ npm run build    # build de production dans dist/
 - Chaque position de parti cite sa source (plateforme officielle 2026 lorsque disponible,
   bilan législatif, ou déclaration publique récente du chef) et un badge « Sourcé », « Déduit »
   ou « Non documenté » — voir « Détail par enjeu et sources » dans les résultats.
-- La palette des 5 partis a été choisie et validée (séparation de teinte pour daltoniens,
-  contraste, bande de luminosité) plutôt que reprise telle quelle des couleurs de marque, qui
-  se recoupent trop (CAQ/PQ/PCQ sont toutes des bleus); l'identification reste toujours faite
-  par un nom écrit à côté de la couleur, jamais par la couleur seule.
+- La palette des 5 partis passe par le validateur de la compétence `dataviz` (séparation sous
+  daltonisme, contraste, bande de luminosité). Deux écarts assumés : le bleu très foncé du PCQ
+  sort de la bande de luminosité en mode clair (c'est le choix de marque), et en mode sombre le
+  bleu du PQ et l'indigo du PCQ sont séparés d'un ΔE de 10,9, sous le plancher de 15. Dans les
+  deux cas la couleur n'est jamais le seul indice : chaque barre, point et radar porte le sigle
+  du parti en toutes lettres.
+- Version courte : les 8 énoncés au plus fort écart-type entre partis, un par thème. C'est la
+  porte d'entrée par défaut — un visiteur arrivé d'un lien social abandonne devant 30 questions,
+  et qui abandonne ne partage pas.
+- Le résultat s'encode dans l'URL (un caractère par énoncé, un par thème). Un lien partagé
+  reproduit exactement le résultat de son auteur et invite le visiteur à faire le sien. Aucun
+  serveur, aucun stockage, aucune donnée qui quitte le navigateur.
+- La carte de partage (1080×1080) est dessinée en canvas côté client, sur une palette claire
+  figée pour que l'image ait la même allure quel que soit le thème de celui qui l'a produite.
 
 ## État des données (relevé le 12 septembre 2026)
 
 | Parti | Sourcé | Déduit | Non documenté |
 |---|---|---|---|
-| CAQ | 28 | 1 | 0 |
-| PQ | 29 | 0 | 0 |
-| PLQ | 24 | 2 | 3 |
-| QS | 28 | 1 | 0 |
-| PCQ | 28 | 0 | 1 |
+| CAQ | 29 | 1 | 0 |
+| PQ | 30 | 0 | 0 |
+| PLQ | 24 | 2 | 4 |
+| QS | 29 | 1 | 0 |
+| PCQ | 29 | 0 | 1 |
 
-Les quatre positions « non documentées » ne sont pas des trous de collecte mais des absences
+Les cinq positions « non documentées » ne sont pas des trous de collecte mais des absences
 de position publique : le PLQ n'avait pas publié de plateforme environnementale complète à la
 fin août 2026 (d'où l'absence de position sur les nouveaux barrages, la propriété
 d'Hydro-Québec et les mégaprojets industriels), et la plateforme du PCQ ne s'exprime pas sur

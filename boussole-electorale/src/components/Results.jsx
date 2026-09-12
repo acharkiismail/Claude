@@ -15,7 +15,10 @@ import {
   computeThemeAffinities,
   isConsensus,
   partyAnswersFromPositions,
+  themeExtremes,
 } from "../lib/scoring";
+import ShareSection from "./ShareSection";
+import { encodeResult, resultUrl } from "../lib/shareLink";
 
 const LIKERT_LABEL = {
   1: "Fortement en désaccord",
@@ -46,7 +49,10 @@ export default function Results({
   partiesById,
   answers,
   weights,
+  mode = "full",
+  viewingSharedResult = false,
   onRestart,
+  onContinueFull,
 }) {
   const [openTheme, setOpenTheme] = useState(null);
 
@@ -103,8 +109,27 @@ export default function Results({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
+      {viewingSharedResult && (
+        <div
+          className="mb-6 flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between"
+          style={{ borderColor: "var(--accent)", backgroundColor: "var(--accent-soft)" }}
+        >
+          <p className="text-sm font-medium text-[var(--ink)]">
+            Vous regardez le résultat de quelqu'un d'autre.
+          </p>
+          <button
+            type="button"
+            onClick={onRestart}
+            className="shrink-0 rounded-xl px-4 py-2 text-sm font-semibold"
+            style={{ backgroundColor: "var(--accent)", color: "var(--on-accent)" }}
+          >
+            Faire le mien →
+          </button>
+        </div>
+      )}
+
       <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--accent)" }}>
-        Vos résultats
+        {viewingSharedResult ? "Résultat partagé" : "Vos résultats"}
       </p>
 
       {isTie ? (
@@ -133,6 +158,44 @@ export default function Results({
           </p>
         </>
       )}
+
+      {mode === "short" && !viewingSharedResult && (
+        <div
+          className="mt-6 flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between"
+          style={{ borderColor: "var(--hairline)", backgroundColor: "var(--surface)" }}
+        >
+          <p className="text-sm text-[var(--ink-secondary)]">
+            Ce résultat repose sur {answeredCount} énoncés. Le questionnaire complet en compte{" "}
+            {statements.length} et affine nettement le portrait.
+          </p>
+          <button
+            type="button"
+            onClick={onContinueFull}
+            className="shrink-0 rounded-xl px-4 py-2 text-sm font-semibold"
+            style={{ backgroundColor: "var(--accent)", color: "var(--on-accent)" }}
+          >
+            Continuer →
+          </button>
+        </div>
+      )}
+
+      <Card
+        title="Partager votre résultat"
+        subtitle="Une image carrée prête à publier, ou un lien qui reproduit exactement ce résultat."
+      >
+        <ShareSection
+          cardData={{
+            topParty: top.party,
+            affinity: top.affinity,
+            isTie,
+            runnerUp: runnerUp?.party,
+            ranked: ranked.map((r) => ({ party: r.party, affinity: r.affinity })),
+            radarValues: radarThemes.map((t) => themeAffinities[top.party.id][t.id] ?? 0),
+            ...themeExtremes(themeAffinities[top.party.id], radarThemes),
+          }}
+          shareUrl={resultUrl(encodeResult(statements, themes, answers, weights))}
+        />
+      </Card>
 
       <Card
         title="Classement d'affinité"

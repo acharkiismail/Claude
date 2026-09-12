@@ -666,6 +666,43 @@
     "context": "Le marché du carbone québécois, lié à celui de la Californie, finance une partie du Plan pour une économie verte."
   },
   {
+    "id": "s31",
+    "themeId": "environnement",
+    "text": "Le Québec devrait réduire ses gaz à effet de serre plus vite, même si ça freine certains projets industriels.",
+    "axis": {
+      "economic": 0,
+      "identity": 0
+    },
+    "positions": {
+      "caq": {
+        "value": 2,
+        "reliability": "sourced",
+        "source": "A repoussé l'échéance de sa cible de -37,5 % de 2030 à 2035, présentée comme « ambitieuse mais réaliste » — quebec.ca, communiqué 2026"
+      },
+      "pq": {
+        "value": 4,
+        "reliability": "sourced",
+        "source": "Propose -42,5 % d'ici 2034 avec des budgets carbone quinquennaux, mais sans nouvelles taxes ni « mesures moralisatrices » — Le Devoir, 2026"
+      },
+      "plq": {
+        "value": null,
+        "reliability": "unknown",
+        "source": "Aucune cible chiffrée de réduction des GES n'a pu être documentée; le PLQ n'avait pas publié de plateforme environnementale complète à la fin août 2026 — Le Devoir, 2026"
+      },
+      "qs": {
+        "value": 5,
+        "reliability": "sourced",
+        "source": "Vise -55 % sous les niveaux de 1990 d'ici 2030, la cible la plus ambitieuse des cinq partis, sans nouveaux barrages — Radio-Canada, nouvelle 1911242"
+      },
+      "pcq": {
+        "value": 1,
+        "reliability": "sourced",
+        "source": "Veut abolir le marché du carbone et se montre sceptique envers les cibles climatiques contraignantes — La Presse, 29 août 2026"
+      }
+    },
+    "context": "Les cibles annoncées vont de -37,5 % d'ici 2035 (CAQ) à -55 % d'ici 2030 (QS), par rapport aux niveaux de 1990."
+  },
+  {
     "id": "s19",
     "themeId": "economie",
     "text": "Hydro-Québec devrait rester entièrement publique, sans place au privé.",

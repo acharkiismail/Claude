@@ -32,10 +32,12 @@ export default function CompassChart({ userPosition, partyPositions }) {
         <text x={SIZE / 2} y={SIZE - 6} textAnchor="middle" className="text-[9px]" style={{ fill: "var(--ink-muted)" }}>
           Fédéraliste
         </text>
-        <text x={8} y={SIZE / 2 + 3} textAnchor="start" className="text-[9px]" style={{ fill: "var(--ink-muted)" }}>
+        {/* Sous la ligne d'axe : les étiquettes de parti se dessinent au-dessus de leur
+            point, un parti posé sur l'axe ne vient donc pas les masquer. */}
+        <text x={8} y={SIZE / 2 + 20} textAnchor="start" className="text-[9px]" style={{ fill: "var(--ink-muted)" }}>
           État
         </text>
-        <text x={SIZE - 8} y={SIZE / 2 + 3} textAnchor="end" className="text-[9px]" style={{ fill: "var(--ink-muted)" }}>
+        <text x={SIZE - 8} y={SIZE / 2 + 20} textAnchor="end" className="text-[9px]" style={{ fill: "var(--ink-muted)" }}>
           Marché
         </text>
 
