@@ -1,0 +1,362 @@
+[
+  {
+    "id": "s1", "themeId": "cout-vie",
+    "text": "Le gouvernement devrait baisser les impôts des particuliers, même si cela implique de réduire certains services publics.",
+    "axis": { "economic": 1, "identity": 0 },
+    "positions": {
+      "caq": { "value": 2, "source": "Fréchette exclut toute baisse d'impôt ou de taxe foncière avant le retour à l'équilibre budgétaire (2029-2030); privilégie des mesures ciblées (682 M$) — La Presse, 25 mai 2026" },
+      "pq": { "value": 2, "source": "Baisse d'impôt de 17-20% ciblée aux PME et mesures ciblées aux ménages (abolition TVQ biens usagés), financées par la fin des subventions aux multinationales, pas de réduction de services annoncée — Le Devoir, 2026" },
+      "plq": { "value": 2, "source": "Baisse graduelle de l'impôt des PME (11,5%→10%) et engagement à ne pas hausser l'impôt des particuliers, sans baisse générale ni coupe de services annoncée — Radio-Canada, plateforme économique PLQ" },
+      "qs": { "value": 1, "source": "QS rejette l'approche de baisses d'impôts de ses adversaires, privilégiant une fiscalité progressive ciblée sur les plus riches — Le Devoir, 1006385" },
+      "pcq": { "value": 5, "source": "Hausse de l'exemption personnelle de base (18 952$→35 242$), baisse cumulée jusqu'à 8 726$/contribuable, financée par un « grand ménage » de 47 G$ dans les dépenses publiques — La Presse, 28 août 2026" }
+    }
+  },
+  {
+    "id": "s2", "themeId": "cout-vie",
+    "text": "Le Québec devrait taxer davantage les grandes fortunes et les hauts revenus pour financer les services publics, plutôt que de réduire les dépenses de l'État.",
+    "axis": { "economic": -1, "identity": 0 },
+    "positions": {
+      "caq": { "value": 2, "source": "Aucune proposition de nouvel impôt sur la fortune; approche budgétaire prudente axée sur des mesures ciblées existantes — cadre financier CAQ, août 2026" },
+      "pq": { "value": 4, "source": "Plamondon prône un système fiscal plus progressif taxant davantage les hauts revenus, en parallèle d'une baisse ciblée pour les PME — Le Devoir, 2026" },
+      "plq": { "value": 2, "source": "Aucune mesure de fiscalité accrue sur les hauts revenus ou les fortunes trouvée; priorité aux baisses ciblées pour les PME — Radio-Canada, plateforme économique PLQ" },
+      "qs": { "value": 5, "source": "Taxe annuelle de 1% sur les fortunes de 25 M$+ (2% au-delà de 100 M$), imposition intégrale des gains en capital, ~5 G$/an réinvestis dans les services publics — Le Devoir, 1006799" },
+      "pcq": { "value": 1, "source": "S'oppose à toute hausse d'impôt; finance ses baisses d'impôt par des compressions de dépenses (47 G$) plutôt que par une fiscalité accrue — Le Soleil, 19 août 2026" }
+    }
+  },
+  {
+    "id": "s3", "themeId": "cout-vie",
+    "text": "Le gouvernement devrait privilégier des mesures ciblées (crédits, allocations) pour les ménages à faible revenu plutôt que des baisses d'impôt générales.",
+    "axis": { "economic": -1, "identity": 0 },
+    "positions": {
+      "caq": { "value": 4, "source": "Bouquet de mesures ciblées de 682 M$ : détaxation de produits, bonification du crédit pour solidarité, plutôt qu'une réforme fiscale large — La Presse, 25 mai 2026" },
+      "pq": { "value": 4, "source": "Mesures ciblées aux ménages (remboursement TVQ à l'achat d'une maison neuve, abolition TVQ sur biens usagés) en parallèle d'une baisse d'impôt PME — La Presse, 9 sept. 2026" },
+      "plq": { "value": 3, "source": "Mesures ciblées surtout dirigées vers les PME et les aînés (soins à domicile), moins vers les ménages à faible revenu spécifiquement — Radio-Canada, plateforme PLQ" },
+      "qs": { "value": 5, "source": "Approche redistributive assumée : fiscalité progressive et réinvestissement ciblé plutôt que baisses d'impôt générales — Le Devoir, 1006385" },
+      "pcq": { "value": 1, "source": "Favorise une baisse d'impôt générale et universelle (hausse de l'exemption de base) plutôt que des mesures ciblées — La Presse, 28 août 2026" }
+    }
+  },
+  {
+    "id": "s4", "themeId": "sante",
+    "text": "Le Québec devrait permettre un plus grand rôle du secteur privé dans la prestation de soins de santé financés publiquement.",
+    "axis": { "economic": 1, "identity": 0 },
+    "positions": {
+      "caq": { "value": 4, "source": "Fréchette ouvre la porte à une « pratique mixte » public-privé pour spécialistes puis omnipraticiens, avec accélération des délais de redirection vers le privé — La Presse, 31 août 2026" },
+      "pq": { "value": 1, "source": "S'oppose fermement à l'élargissement de la mixité public-privé proposée par la CAQ, y voyant une porte ouverte à la privatisation — La Presse, 20 août 2026" },
+      "plq": { "value": 2, "source": "Le PLQ dit croire « profondément » au réseau public et promet de ne pas élargir la place du privé, tout en alignant les tarifs privés sur le public — Radio-Canada, PLQ pour le privé en santé?" },
+      "qs": { "value": 1, "source": "S'oppose fermement à la privatisation, allié à la CSN contre l'élargissement du rôle du privé en santé — La Presse, 5 sept. 2026" },
+      "pcq": { "value": 5, "source": "Délais maximaux garantis au-delà desquels le patient est traité au privé (accrédité RAMQ) aux frais de l'État; mise sur l'investissement privé pour augmenter l'offre — Noovo Info, 2026" }
+    }
+  },
+  {
+    "id": "s5", "themeId": "sante",
+    "text": "Santé Québec, l'agence centralisée créée par la CAQ, devrait être abolie pour redonner plus d'autonomie locale au réseau de la santé.",
+    "axis": { "economic": 0, "identity": 0 },
+    "positions": {
+      "caq": { "value": 2, "source": "La CAQ maintient Santé Québec, mais lui a commandé une réduction d'un milliard de dépenses administratives — Le Devoir, « La CAQ rompt avec l'ère Dubé »" },
+      "pq": { "value": 5, "source": "Le PQ propose d'abolir Santé Québec, jugée bureaucratie centralisée coûteuse, pour réinvestir dans les soins directs — Radio-Canada, nouvelle 2276607" },
+      "plq": { "value": 5, "source": "Le PLQ promet l'abolition de Santé Québec, créée par la CAQ — Radio-Canada, PLQ pour le privé en santé?" },
+      "qs": { "value": 3, "source": "Position non explicitement documentée dans la couverture de campagne 2026 trouvée; QS priorise plutôt la lutte à la privatisation et un réseau de CLSC — valeur neutre par défaut" },
+      "pcq": { "value": 5, "source": "Le PCQ veut abolir Santé Québec et réduire la bureaucratie centrale de 25%, redonnant l'autonomie aux établissements locaux — Noovo Info, 2026" }
+    }
+  },
+  {
+    "id": "s6", "themeId": "sante",
+    "text": "L'État devrait garantir des délais maximaux de traitement, au-delà desquels les patients pourraient se faire soigner au privé aux frais de l'État.",
+    "axis": { "economic": 1, "identity": 0 },
+    "positions": {
+      "caq": { "value": 4, "source": "Promet d'accélérer les délais de redirection vers le privé pour chirurgies en attente (9→6 mois, 12→9 mois) — La Presse, 31 août 2026" },
+      "pq": { "value": 1, "source": "S'oppose à l'élargissement de la mixité public-privé — La Presse, 20 août 2026" },
+      "plq": { "value": 2, "source": "Promet de ne pas élargir la place du privé dans le réseau — Radio-Canada, PLQ pour le privé en santé?" },
+      "qs": { "value": 1, "source": "Opposé à toute expansion du privé en santé — La Presse, 5 sept. 2026" },
+      "pcq": { "value": 5, "source": "Engagement phare : délais maximaux garantis, au-delà desquels traitement au privé (RAMQ) ou hors Québec aux frais de l'État — Noovo Info, 2026" }
+    }
+  },
+  {
+    "id": "s7", "themeId": "education",
+    "text": "Le financement public des écoles privées qui sélectionnent leurs élèves devrait être aboli ou fortement réduit.",
+    "axis": { "economic": -1, "identity": 0 },
+    "positions": {
+      "caq": { "value": 1, "source": "Ne remet pas en question le mode de fonctionnement actuel des écoles privées subventionnées — bilan CAQ, gouvernance scolaire (loi 23)" },
+      "pq": { "value": 3, "source": "Position assouplie depuis 2022 : financement à 100% pour écoles qui deviennent « conventionnées », réduction graduelle sans échéancier pour les autres — L'actualité, 2026" },
+      "plq": { "value": 1, "source": "Veut « stimuler la qualité de l'école publique » (1000 ressources spécialisées) plutôt que retirer le financement au privé — Les Affaires, jour 13" },
+      "qs": { "value": 5, "source": "Propose un Réseau commun d'école : fin de la sélection par notes/frais en échange du financement à 100%, sinon retrait graduel du financement — communiqué QS, 2026" },
+      "pcq": { "value": 1, "source": "Favorise le libre choix via un « chèque éducation » (bon scolaire) entre écoles publiques et privées — orientations Duhaime, 2021" }
+    }
+  },
+  {
+    "id": "s8", "themeId": "education",
+    "text": "Le gouvernement devrait organiser des états généraux pour revoir en profondeur le système d'éducation.",
+    "axis": { "economic": 0, "identity": 0 },
+    "positions": {
+      "caq": { "value": 2, "source": "Aucun état général proposé; le gouvernement a déjà mené sa propre réforme de gouvernance scolaire (loi 23) — position déduite, non documentée explicitement" },
+      "pq": { "value": 5, "source": "Promet des états généraux en éducation dans les 100 premiers jours d'un mandat — Le Devoir, « PSPP veut une mise à jour du système d'éducation »" },
+      "plq": { "value": 5, "source": "Promet des états généraux sur l'éducation dans les 100 premiers jours d'un gouvernement Milliard — Radio-Canada, nouvelle 2280177" },
+      "qs": { "value": 4, "source": "Vise une réforme structurelle profonde (Réseau commun d'école) légiférée dans les 100 premiers jours, dans un esprit similaire — communiqué QS, 2026 (inféré)" },
+      "pcq": { "value": 2, "source": "Favorise une décentralisation directe (écoles à charte) plutôt qu'un exercice de consultation mené par le gouvernement — orientations PCQ, 2021-2026" }
+    }
+  },
+  {
+    "id": "s9", "themeId": "education",
+    "text": "Le financement des infrastructures scolaires vétustes devrait être une priorité budgétaire immédiate.",
+    "axis": { "economic": 0, "identity": 0 },
+    "positions": {
+      "caq": { "value": 4, "source": "Promet près de 800 M$ en infrastructures scolaires pour la seule région de Québec/Chaudière-Appalaches — Radio-Canada, engagements CAQ" },
+      "pq": { "value": 4, "source": "Reconnaît un déficit d'infrastructures scolaires dans sa plateforme éducation — Le Devoir, 1005845" },
+      "plq": { "value": 3, "source": "Aucun engagement chiffré spécifique aux infrastructures trouvé; priorité mise sur les ressources spécialisées — position neutre par défaut" },
+      "qs": { "value": 3, "source": "Les 340 M$ promis pour l'école publique visent surtout la lutte au décrochage, pas spécifiquement les infrastructures — La Presse, 31 août 2026" },
+      "pcq": { "value": 2, "source": "Priorise le libre choix et l'autonomie des écoles plutôt qu'un engagement chiffré en infrastructures publiques — position déduite" }
+    }
+  },
+  {
+    "id": "s10", "themeId": "immigration",
+    "text": "Le Québec devrait réduire ses seuils d'immigration permanente.",
+    "axis": { "economic": 0, "identity": 0 },
+    "positions": {
+      "caq": { "value": 4, "source": "A déjà abaissé ses seuils d'immigration permanente à environ 45 000/an pour 2026-2029, invoquant la capacité d'accueil — quebec.ca, communiqué" },
+      "pq": { "value": 5, "source": "Promet une baisse « significative » des seuils d'immigration permanente — La Presse, 29 août 2026" },
+      "plq": { "value": 2, "source": "Milliard refuse d'avancer un chiffre et critique le PQ; ne propose pas de réduction des seuils — Les Affaires, immigration" },
+      "qs": { "value": 1, "source": "Propose de rehausser le seuil d'immigration permanente à 70 000/an — La Presse, 1er sept. 2026" },
+      "pcq": { "value": 4, "source": "Duhaime juge qu'il y a « beaucoup trop » d'immigrants, sans toutefois fixer de seuil chiffré précis — Le Soleil, 31 janv. 2026" }
+    }
+  },
+  {
+    "id": "s11", "themeId": "immigration",
+    "text": "Le Québec devrait obtenir le plein contrôle de l'immigration, incluant la réunification familiale et les demandeurs d'asile, indépendamment d'Ottawa.",
+    "axis": { "economic": 0, "identity": 1 },
+    "positions": {
+      "caq": { "value": 5, "source": "Réclame depuis 2015 le rapatriement de « tous les pouvoirs » en immigration auprès d'Ottawa, réitéré en 2022 et 2024 — Le Devoir, « CAQ n'acceptera pas un non »" },
+      "pq": { "value": 4, "source": "Veut reprendre le plein contrôle de l'immigration pour l'arrimer à la capacité réelle du Québec — La Presse, 29 août 2026" },
+      "plq": { "value": 4, "source": "Réclame le plein contrôle du programme des travailleurs étrangers temporaires, partagé avec Ottawa — Les Affaires, immigration" },
+      "qs": { "value": 5, "source": "Réclame un contrôle accru sur toute l'immigration via la réouverture de l'Accord Canada-Québec de 1991 — La Presse, févr. 2024" },
+      "pcq": { "value": 4, "source": "Propose une régionalisation du pouvoir de sélection et davantage de pouvoirs pour le Québec en immigration — Le Devoir, projet de loi immigration" }
+    }
+  },
+  {
+    "id": "s12", "themeId": "immigration",
+    "text": "Il faut davantage limiter l'immigration temporaire (travailleurs, étudiants) pour réduire la pression sur le logement et les services publics.",
+    "axis": { "economic": 0, "identity": 0 },
+    "positions": {
+      "caq": { "value": 5, "source": "A fixé pour la première fois des cibles maximales pour l'immigration temporaire (65 000 travailleurs, 110 000 étudiants d'ici 2029), invoquant la capacité d'accueil — quebec.ca, communiqué" },
+      "pq": { "value": 5, "source": "Promet de réduire de moitié l'immigration temporaire (200 000 à 250 000 personnes de moins) — La Presse, 29 août 2026" },
+      "plq": { "value": 2, "source": "A dénoncé le lien fait par le PQ entre immigration et surpopulation scolaire; ne propose pas de limites importantes — Radio-Canada, nouvelle 2278866" },
+      "qs": { "value": 3, "source": "Reconnaît qu'il faut réduire le nombre de résidents temporaires mais propose un comité d'experts et une régularisation plutôt que des coupes strictes — Le Devoir, 799615" },
+      "pcq": { "value": 4, "source": "Critique le niveau élevé d'immigration temporaire, sans toutefois fixer de seuils numériques fermes — Le Soleil, 31 janv. 2026" }
+    }
+  },
+  {
+    "id": "s13", "themeId": "langue-laicite",
+    "text": "Il faut renforcer la loi 96 en l'étendant aux cégeps pour limiter l'accès aux établissements anglophones.",
+    "axis": { "economic": 0, "identity": 0 },
+    "positions": {
+      "caq": { "value": 3, "source": "Le bilan CAQ inclut l'extension de la loi 96 aux entreprises de 25-49 employés, mais aucune extension supplémentaire aux cégeps n'est clairement documentée pour 2026 — position incertaine" },
+      "pq": { "value": 5, "source": "Propose une nouvelle mouture de la Charte de la langue française étendue aux cégeps pour limiter l'accès aux cégeps anglophones — Le Devoir, 1005113" },
+      "plq": { "value": 1, "source": "Propose le retour du libre choix de cégep (anglophone ou francophone) pour tous — La Presse, 6 juin 2026" },
+      "qs": { "value": 3, "source": "Débat interne non tranché sur l'application de la loi 101 aux cégeps — L'actualité, 2026" },
+      "pcq": { "value": 1, "source": "A historiquement promis d'abroger la loi 96, invoquant les droits historiques de la minorité anglophone — La Presse, 6 sept. 2022" }
+    }
+  },
+  {
+    "id": "s14", "themeId": "langue-laicite",
+    "text": "La loi 21 sur la laïcité de l'État devrait être maintenue et renforcée.",
+    "axis": { "economic": 0, "identity": 0 },
+    "positions": {
+      "caq": { "value": 5, "source": "A verrouillé la loi 21 (clause dérogatoire jusqu'en 2031) et l'a renforcée via le projet de loi 9 (cégeps, universités, lieux municipaux) — fedecegeps.ca, mémoire PL9" },
+      "pq": { "value": 5, "source": "Veut aller plus loin que la loi 21 en interdisant les signes religieux à tous les élèves du primaire — Le Devoir, 1005113" },
+      "plq": { "value": 1, "source": "Veut retirer la clause dérogatoire qui protège la loi 21 des contestations judiciaires — Radio-Canada, nouvelle 2247402" },
+      "qs": { "value": 1, "source": "S'oppose historiquement à la loi 21, dénonçant la clause dérogatoire et la jugeant discriminatoire — Presse-toi à gauche, 2026" },
+      "pcq": { "value": 5, "source": "Appuie fermement la loi 21 et l'usage de la clause dérogatoire, jugée légitime — Radio-Canada, nouvelle 2246969" }
+    }
+  },
+  {
+    "id": "s15", "themeId": "langue-laicite",
+    "text": "Le gouvernement devrait alléger les exigences linguistiques imposées aux petites entreprises plutôt que les renforcer.",
+    "axis": { "economic": 0, "identity": 0 },
+    "positions": {
+      "caq": { "value": 2, "source": "A déjà étendu les exigences de la loi 96 aux entreprises de 25 à 49 employés, sans signal de vouloir les alléger — bilan CAQ" },
+      "pq": { "value": 2, "source": "Ne propose pas d'alléger les exigences aux entreprises; concentre ses efforts linguistiques sur les cégeps — Le Devoir, 1005113" },
+      "plq": { "value": 5, "source": "Plan « moins coercitif » : allégement du fardeau administratif imposé aux PME et de l'obligation de français en 6 mois pour les immigrants — La Presse, 6 juin 2026" },
+      "qs": { "value": 1, "source": "A tenté d'assujettir davantage d'entreprises (10 employés et plus, plutôt que 25) à la francisation — L'actualité, 2026" },
+      "pcq": { "value": 4, "source": "Scepticisme historique envers l'alourdissement réglementaire imposé aux PME par la loi 96 — La Presse, 6 sept. 2022" }
+    }
+  },
+  {
+    "id": "s16", "themeId": "environnement",
+    "text": "Le Québec devrait maintenir l'interdiction de toute exploration et exploitation d'hydrocarbures sur son territoire.",
+    "axis": { "economic": 0, "identity": 0 },
+    "positions": {
+      "caq": { "value": 5, "source": "A fait adopter l'interdiction et l'a défendue devant les tribunaux (requête rejetée par la Cour suprême, 2025) — quebec.ca" },
+      "pq": { "value": 5, "source": "Position historique constante d'opposition à l'exploration/exploitation des hydrocarbures au Québec — Le Devoir, contexte" },
+      "plq": { "value": 5, "source": "A voté pour l'interdiction en 2022, aucun signal de vouloir la renverser — Le Devoir, 698667" },
+      "qs": { "value": 5, "source": "Soutient l'interdiction bien qu'il l'ait jugée insuffisante (abstention au vote, faute de compensations) — Le Devoir, 698667" },
+      "pcq": { "value": 1, "source": "Veut lever le moratoire et exploiter le gaz de schiste d'Utica — La Presse, 31 août 2026" }
+    }
+  },
+  {
+    "id": "s17", "themeId": "environnement",
+    "text": "Le gouvernement devrait accélérer la construction de nouveaux barrages hydroélectriques, au besoin en raccourcissant les délais de consultation.",
+    "axis": { "economic": 0, "identity": 0 },
+    "positions": {
+      "caq": { "value": 5, "source": "Propose de nouveaux barrages hydroélectriques et de raccourcir les délais de réalisation (actuellement ~15 ans) — Radio-Canada, nouveaux barrages" },
+      "pq": { "value": 3, "source": "Ne ferme pas la porte à de nouveaux barrages mais priorise d'abord l'efficacité énergétique — Le Devoir, 1001435" },
+      "plq": { "value": 3, "source": "Aucune position claire et récente trouvée sur la construction de nouveaux barrages — position neutre par défaut" },
+      "qs": { "value": 1, "source": "Juge qu'il n'est pas nécessaire de construire de nouveaux barrages pour atteindre ses cibles de GES, priorise l'efficacité énergétique — Radio-Canada, nouvelle 1911242" },
+      "pcq": { "value": 4, "source": "Position non distinguée clairement de la CAQ dans la couverture trouvée; orientation générale favorable au développement énergétique et à l'investissement privé — inféré" }
+    }
+  },
+  {
+    "id": "s18", "themeId": "environnement",
+    "text": "Le Québec devrait maintenir le marché du carbone (bourse du carbone) comme outil de lutte aux changements climatiques.",
+    "axis": { "economic": 0, "identity": 0 },
+    "positions": {
+      "caq": { "value": 4, "source": "Maintient sa cible de GES et le marché du carbone, tout en repoussant l'échéance de 2030 à 2035 — quebec.ca, communiqué 2026" },
+      "pq": { "value": 4, "source": "Propose des cibles de GES plus ambitieuses avec des « budgets carbone », sans remettre en cause le marché du carbone — Le Devoir, 1001435" },
+      "plq": { "value": 4, "source": "Aucune opposition trouvée au marché du carbone; position présumée alignée sur le consensus des partis non-conservateurs — inféré" },
+      "qs": { "value": 5, "source": "Soutient les outils climatiques existants et propose une cible de -55% de GES d'ici 2030, plus ambitieuse — Radio-Canada, nouvelle 1911242" },
+      "pcq": { "value": 1, "source": "Veut abolir le marché du carbone (SPEDE) et suspendre la taxe sur l'essence qui en découle — La Presse, 29 août 2026" }
+    }
+  },
+  {
+    "id": "s19", "themeId": "economie",
+    "text": "Hydro-Québec devrait demeurer entièrement publique, sans participation privée dans la production ou la distribution.",
+    "axis": { "economic": -1, "identity": 0 },
+    "positions": {
+      "caq": { "value": 2, "source": "A bloqué une motion multipartite excluant toute vente ou construction de nouvelles installations par le privé — communiqués SCFP/CSQ" },
+      "pq": { "value": 5, "source": "A déposé une motion pour qu'Hydro-Québec ne soit jamais vendue ni confiée au privé — Radio-Canada, nouvelle 2278522" },
+      "plq": { "value": 4, "source": "Le porte-parole énergie du PLQ s'est historiquement opposé à l'ouverture du réseau au privé faite par la CAQ — position du parti, non confirmée personnellement par Milliard" },
+      "qs": { "value": 5, "source": "Défend inconditionnellement la propriété publique d'Hydro-Québec, dénonçant une « démolition tranquille » via la réforme énergétique — quebec.ca, communiqué QS" },
+      "pcq": { "value": 2, "source": "Position 2026 non confirmée clairement; orientation historique du parti plus ouverte à la concurrence privée — inféré, à valider" }
+    }
+  },
+  {
+    "id": "s20", "themeId": "economie",
+    "text": "Le gouvernement devrait réduire fortement les subventions directes et crédits d'impôt ciblés aux grandes entreprises privées.",
+    "axis": { "economic": 0, "identity": 0 },
+    "positions": {
+      "caq": { "value": 2, "source": "Continue de miser sur des investissements publics ciblés dans des mégaprojets industriels (filière batterie) malgré l'échec Northvolt — dossier Northvolt, CBC/Le Devoir" },
+      "pq": { "value": 5, "source": "Veut mettre fin au « bar ouvert » aux multinationales étrangères, rediriger les fonds vers une baisse d'impôt aux PME — Radio-Canada, nouvelle 2278522" },
+      "plq": { "value": 3, "source": "Aucune position explicite trouvée sur la réduction des subventions aux grandes entreprises — position neutre par défaut" },
+      "qs": { "value": 4, "source": "Critique constante des subventions massives aux mégaprojets sans garanties ni transparence suffisantes — Le Devoir, 986777" },
+      "pcq": { "value": 5, "source": "S'oppose fortement au « corporate welfare » (citant Northvolt, Lion Électrique), vise 20 G$ d'économies en réduisant subventions et crédits ciblés — Radio-Canada, nouvelle 2275143" }
+    }
+  },
+  {
+    "id": "s21", "themeId": "economie",
+    "text": "Il faut prioriser l'attraction de grands projets industriels (batteries, minéraux critiques), même avec d'importants incitatifs fiscaux.",
+    "axis": { "economic": -1, "identity": 0 },
+    "positions": {
+      "caq": { "value": 4, "source": "Continue de miser sur la filière batterie et les minéraux critiques comme axe de développement économique malgré l'échec Northvolt — dossier Northvolt" },
+      "pq": { "value": 2, "source": "Dénonce le dossier Northvolt comme exemple de mégaprojet mal ficelé, veut mettre fin aux largesses envers les multinationales — Radio-Canada, nouvelle 2278522" },
+      "plq": { "value": 3, "source": "Aucune position claire et spécifique trouvée sur les mégaprojets industriels et incitatifs fiscaux — position neutre par défaut" },
+      "qs": { "value": 1, "source": "Critique de longue date des mégaprojets industriels subventionnés sans garanties (Bécancour, Northvolt) — Presse-toi à gauche, 2026" },
+      "pcq": { "value": 1, "source": "S'oppose aux subventions ciblées, citant Northvolt et Lion Électrique comme exemples de mauvaise gestion des fonds publics — Radio-Canada, nouvelle 2275143" }
+    }
+  },
+  {
+    "id": "s22", "themeId": "logement",
+    "text": "Le gouvernement devrait créer un registre national des loyers et encadrer plus strictement les hausses de loyer.",
+    "axis": { "economic": -1, "identity": 0 },
+    "positions": {
+      "caq": { "value": 1, "source": "Refuse un registre des loyers national, contrairement au PQ et à QS — critiques des oppositions relayées, La Presse" },
+      "pq": { "value": 5, "source": "Propose un registre public des loyers et l'abolition de la « clause F » permettant des hausses illimitées dans le neuf — communiqué PQ, logement" },
+      "plq": { "value": 3, "source": "Propose un plafonnement des hausses de loyer, mais limité aux résidences pour aînés (RPA), pas un registre général — La Presse, 30 août 2026" },
+      "qs": { "value": 5, "source": "Propose un contrôle des loyers plafonné à l'inflation (max 3%) et un registre national des loyers — La Presse, 30 août 2026" },
+      "pcq": { "value": 1, "source": "Veut assouplir le contrôle des loyers (exempter loyers élevés, logements rénovés ou vacants) — La Presse, 11 sept. 2026" }
+    }
+  },
+  {
+    "id": "s23", "themeId": "logement",
+    "text": "Le Québec devrait investir massivement dans la construction de logements sociaux et communautaires financés par l'État.",
+    "axis": { "economic": -1, "identity": 0 },
+    "positions": {
+      "caq": { "value": 2, "source": "N'a pas relancé de grand programme de logement social, critiqué par les oppositions à ce sujet — couverture de campagne 2026" },
+      "pq": { "value": 5, "source": "Refinancer AccèsLogis : 10 000 logements sociaux immédiats, 45 000 sur 5 ans — communiqué PQ, logement" },
+      "plq": { "value": 5, "source": "Promet 40 000 logements sociaux et abordables sur 5 ans (1,5 G$) — Journal de Sherbrooke, 2 sept. 2026" },
+      "qs": { "value": 5, "source": "Promet 50 000 nouvelles unités sociales et communautaires en un mandat — La Presse, 30 août 2026" },
+      "pcq": { "value": 1, "source": "Mise sur la déréglementation de la construction privée plutôt que sur l'investissement public en logement social — La Presse, 11 sept. 2026" }
+    }
+  },
+  {
+    "id": "s24", "themeId": "logement",
+    "text": "Il faut alléger la réglementation et accélérer les processus municipaux pour stimuler la construction par le secteur privé.",
+    "axis": { "economic": 1, "identity": 0 },
+    "positions": {
+      "caq": { "value": 5, "source": "Révise les normes de construction, réduit les délais administratifs (30→15 jours) pour stimuler l'offre privée — La Presse, 4 sept. 2026" },
+      "pq": { "value": 2, "source": "Approche misant davantage sur l'investissement public et l'encadrement des loyers que sur la déréglementation — communiqué PQ, logement" },
+      "plq": { "value": 3, "source": "Aucune stratégie de déréglementation majeure documentée comme axe principal — position neutre par défaut" },
+      "qs": { "value": 1, "source": "Priorise l'investissement public et le contrôle des loyers plutôt que la déréglementation — La Presse, 30 août 2026" },
+      "pcq": { "value": 5, "source": "Plan de déréglementation de la construction (métiers réglementés, Code de construction, dézonage agricole) — La Presse, 11 sept. 2026" }
+    }
+  },
+  {
+    "id": "s25", "themeId": "identite",
+    "text": "Le Québec devrait tenir un référendum sur l'indépendance au cours du prochain mandat.",
+    "axis": { "economic": 0, "identity": 1 },
+    "positions": {
+      "caq": { "value": 1, "source": "S'oppose à la tenue d'un référendum, invoquant que 70% des Québécois n'en veulent pas — Noovo Info, « Autonomiste, rétorque la cheffe de la CAQ »" },
+      "pq": { "value": 5, "source": "Maintient l'engagement de tenir un référendum dans un premier mandat, bien qu'il s'engage à ne pas le tenir avant le 20 janvier 2029 — La Presse, 4 sept. 2026" },
+      "plq": { "value": 1, "source": "Exclut catégoriquement un référendum (« pas de \"noui\" avec nous ») — Le Devoir, 1007675" },
+      "qs": { "value": 4, "source": "Vise à compléter dans un premier mandat un processus d'assemblée constituante suivi d'un référendum sur une nouvelle constitution — La Presse, 3 juill. 2026" },
+      "pcq": { "value": 1, "source": "Rejette l'indépendance comme stratégie, jugeant qu'un référendum perdu renforcerait la centralisation fédérale — La Presse, 8 avril 2026" }
+    }
+  },
+  {
+    "id": "s26", "themeId": "identite",
+    "text": "Le Québec devrait rapatrier davantage de pouvoirs d'Ottawa (immigration, culture, etc.), sans nécessairement viser l'indépendance.",
+    "axis": { "economic": 0, "identity": 1 },
+    "positions": {
+      "caq": { "value": 5, "source": "Ligne autonomiste constante : rapatriement ciblé de pouvoirs (surtout en immigration) plutôt que l'indépendance — Le Devoir, « CAQ n'acceptera pas un non »" },
+      "pq": { "value": 3, "source": "Voit le rapatriement de pouvoirs comme insuffisant face à son objectif d'indépendance, sans le rejeter comme étape — position déduite" },
+      "plq": { "value": 3, "source": "Réclame certains pouvoirs additionnels (immigration temporaire) dans un cadre de fédéralisme coopératif, sans démarche systématique de rapatriement — Les Affaires, immigration" },
+      "qs": { "value": 3, "source": "Réclame le rapatriement du contrôle de l'immigration, mais comme étape instrumentale vers un projet plus large d'indépendance — La Presse, févr. 2024" },
+      "pcq": { "value": 5, "source": "Veut un mécanisme permanent pour contrer les intrusions d'Ottawa et rapatrier des pouvoirs, sans viser l'indépendance — La Presse, 8 avril 2026" }
+    }
+  },
+  {
+    "id": "s27", "themeId": "identite",
+    "text": "Le fédéralisme canadien actuel sert bien les intérêts du Québec et ne nécessite pas de changement majeur.",
+    "axis": { "economic": 0, "identity": -1 },
+    "positions": {
+      "caq": { "value": 2, "source": "Réclame activement plus de pouvoirs (immigration) et refuse de clarifier sa position sur la souveraineté — La Presse, 10-11 sept. 2026" },
+      "pq": { "value": 1, "source": "Le fédéralisme ne sert pas les intérêts du Québec selon le PQ; l'indépendance est présentée comme la solution — position fondatrice du parti" },
+      "plq": { "value": 4, "source": "Défend les avantages du fédéralisme canadien (négociation collective avec les autres provinces face à Washington) — La Presse, 10-11 sept. 2026" },
+      "qs": { "value": 1, "source": "Juge le fédéralisme insuffisant, propose un processus menant à l'indépendance — La Presse, 3 juill. 2026" },
+      "pcq": { "value": 2, "source": "Dénonce un « fédéralisme toxique » et propose des changements significatifs (constitution, mécanisme anti-intrusion) — La Presse, 8 avril 2026" }
+    }
+  },
+  {
+    "id": "s28", "themeId": "role-etat",
+    "text": "Le gouvernement devrait réduire significativement la taille de la fonction publique.",
+    "axis": { "economic": 1, "identity": 0 },
+    "positions": {
+      "caq": { "value": 3, "source": "Vise la suppression de 2 900 postes via l'attrition volontaire (« scalpel, pas tronçonneuse ») — La Presse, 2 sept. 2026" },
+      "pq": { "value": 4, "source": "Vise une réduction de 2,5% des coûts de rémunération du secteur public (4,7 G$ sur un mandat) — Le Devoir, « grand ménage »" },
+      "plq": { "value": 5, "source": "Promet d'abolir environ 12 000 postes équivalents temps plein sur cinq ans — Noovo Info, « 12 000 fonctionnaires »" },
+      "qs": { "value": 1, "source": "S'oppose aux compressions, veut au contraire élargir les services publics — Le Devoir, 1006385" },
+      "pcq": { "value": 5, "source": "Vise l'abolition de 20 000 postes de fonctionnaires dans le cadre d'un « grand ménage » de 47 G$ — Le Soleil, 19 août 2026" }
+    }
+  },
+  {
+    "id": "s29", "themeId": "role-etat",
+    "text": "L'État devrait conserver un rôle actif dans l'économie via les sociétés d'État (Hydro-Québec, Investissement Québec) plutôt que de laisser le marché décider.",
+    "axis": { "economic": -1, "identity": 0 },
+    "positions": {
+      "caq": { "value": 4, "source": "Conserve les sociétés d'État comme levier de développement économique (Hydro-Québec, Investissement Québec) — bilan CAQ" },
+      "pq": { "value": 5, "source": "Défend un rôle actif de l'État via les sociétés d'État, s'opposant à toute privatisation d'Hydro-Québec — Radio-Canada, nouvelle 2278522" },
+      "plq": { "value": 3, "source": "Position générale pro-marché avec défense ponctuelle des sociétés d'État (Hydro-Québec) par son porte-parole énergie; pas de ligne explicite et récente — inféré" },
+      "qs": { "value": 5, "source": "Favorise fortement un rôle actif de l'État dans l'économie, opposé à la logique de marché seule — quebec.ca, communiqué QS" },
+      "pcq": { "value": 1, "source": "S'oppose à l'intervention étatique dans l'économie, privilégie l'investissement privé et la concurrence — Radio-Canada, nouvelle 2275143" }
+    }
+  },
+  {
+    "id": "s30", "themeId": "role-etat",
+    "text": "Il faut réduire la bureaucratie et les dédoublements entre ministères et organismes pour améliorer l'efficacité des services publics.",
+    "axis": { "economic": 1, "identity": 0 },
+    "positions": {
+      "caq": { "value": 4, "source": "Créerait une « équipe dédiée à l'efficacité de l'État » pour revoir/fusionner/abolir ministères et organismes — La Presse, 2 sept. 2026" },
+      "pq": { "value": 5, "source": "Promet un « grand ménage » ciblant les structures créées par la CAQ (Santé Québec, Mobilité Infra Québec) — Le Devoir, « grand ménage »" },
+      "plq": { "value": 5, "source": "Présente ses coupes de postes comme un plan de modernisation et d'efficacité de l'État — Noovo Info, « 12 000 fonctionnaires »" },
+      "qs": { "value": 2, "source": "Priorise l'élargissement des services publics plutôt que leur rationalisation — Le Devoir, 1006385" },
+      "pcq": { "value": 5, "source": "Vise une réduction de 25% de la bureaucratie centrale en santé, dans le cadre de son « grand ménage » — Le Soleil, 19 août 2026" }
+    }
+  }
+]

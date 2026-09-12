@@ -1,0 +1,42 @@
+[
+  {
+    "id": "caq",
+    "name": "Coalition avenir Québec",
+    "shortName": "CAQ",
+    "leader": "Christine Fréchette",
+    "color": "#00A1E4",
+    "website": "https://coalitionavenirquebec.org"
+  },
+  {
+    "id": "pq",
+    "name": "Parti québécois",
+    "shortName": "PQ",
+    "leader": "Paul St-Pierre Plamondon",
+    "color": "#0F4C9C",
+    "website": "https://pq.org"
+  },
+  {
+    "id": "plq",
+    "name": "Parti libéral du Québec",
+    "shortName": "PLQ",
+    "leader": "Charles Milliard",
+    "color": "#D9272E",
+    "website": "https://plq.org"
+  },
+  {
+    "id": "qs",
+    "name": "Québec solidaire",
+    "shortName": "QS",
+    "leader": "Ruba Ghazal",
+    "color": "#FF6B35",
+    "website": "https://quebecsolidaire.net"
+  },
+  {
+    "id": "pcq",
+    "name": "Parti conservateur du Québec",
+    "shortName": "PCQ",
+    "leader": "Éric Duhaime",
+    "color": "#5B2A86",
+    "website": "https://conservateur.quebec"
+  }
+]

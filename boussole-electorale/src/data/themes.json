@@ -1,0 +1,12 @@
+[
+  { "id": "cout-vie", "order": 1, "name": "Coût de la vie et fiscalité", "shortName": "Coût de la vie" },
+  { "id": "sante", "order": 2, "name": "Santé", "shortName": "Santé" },
+  { "id": "education", "order": 3, "name": "Éducation", "shortName": "Éducation" },
+  { "id": "immigration", "order": 4, "name": "Immigration et intégration", "shortName": "Immigration" },
+  { "id": "langue-laicite", "order": 5, "name": "Langue française et laïcité", "shortName": "Langue et laïcité" },
+  { "id": "environnement", "order": 6, "name": "Environnement et énergie", "shortName": "Environnement" },
+  { "id": "economie", "order": 7, "name": "Économie, emploi et Hydro-Québec", "shortName": "Économie" },
+  { "id": "logement", "order": 8, "name": "Logement", "shortName": "Logement" },
+  { "id": "identite", "order": 9, "name": "Identité nationale et statut du Québec", "shortName": "Identité nationale" },
+  { "id": "role-etat", "order": 10, "name": "Taille et rôle de l'État", "shortName": "Rôle de l'État" }
+]

@@ -1,0 +1,107 @@
+import { useMemo, useState } from "react";
+import statements from "./data/statements.json";
+import themes from "./data/themes.json";
+import parties from "./data/parties.json";
+import Intro from "./components/Intro";
+import ThemeWeighting from "./components/ThemeWeighting";
+import Questionnaire from "./components/Questionnaire";
+import Results from "./components/Results";
+import {
+  computeAffinities,
+  computeAxisPosition,
+  partyAnswersFromPositions,
+} from "./lib/scoring";
+
+const STEPS = { INTRO: "intro", WEIGHTING: "weighting", QUIZ: "quiz", RESULTS: "results" };
+
+const defaultWeights = Object.fromEntries(themes.map((t) => [t.id, 1]));
+const themesById = Object.fromEntries(themes.map((t) => [t.id, t]));
+const partiesById = Object.fromEntries(parties.map((p) => [p.id, p]));
+
+export default function App() {
+  const [step, setStep] = useState(STEPS.INTRO);
+  const [weights, setWeights] = useState(defaultWeights);
+  const [answers, setAnswers] = useState({});
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const handleAnswer = (statementId, value) => {
+    setAnswers((prev) => {
+      if (value == null) {
+        const next = { ...prev };
+        next[statementId] = null;
+        return next;
+      }
+      return { ...prev, [statementId]: value };
+    });
+  };
+
+  const restart = () => {
+    setAnswers({});
+    setWeights(defaultWeights);
+    setCurrentIndex(0);
+    setStep(STEPS.INTRO);
+  };
+
+  const results = useMemo(() => {
+    if (step !== STEPS.RESULTS) return null;
+    const rankedAffinities = computeAffinities(statements, parties, answers, weights);
+    const userPosition = computeAxisPosition(statements, answers);
+    const partyPositions = parties.map((party) => ({
+      party,
+      position: computeAxisPosition(statements, partyAnswersFromPositions(statements, party.id)),
+    }));
+    return { rankedAffinities, userPosition, partyPositions };
+  }, [step, answers, weights]);
+
+  return (
+    <div className="min-h-dvh bg-slate-50 dark:bg-slate-950">
+      {step === STEPS.INTRO && (
+        <Intro
+          statementCount={statements.length}
+          themeCount={themes.length}
+          onStart={() => setStep(STEPS.WEIGHTING)}
+        />
+      )}
+
+      {step === STEPS.WEIGHTING && (
+        <ThemeWeighting
+          themes={themes}
+          weights={weights}
+          onChange={(themeId, value) => setWeights((prev) => ({ ...prev, [themeId]: value }))}
+          onContinue={() => setStep(STEPS.QUIZ)}
+          onSkip={() => {
+            setWeights(defaultWeights);
+            setStep(STEPS.QUIZ);
+          }}
+        />
+      )}
+
+      {step === STEPS.QUIZ && (
+        <Questionnaire
+          statements={statements}
+          themesById={themesById}
+          answers={answers}
+          currentIndex={currentIndex}
+          onAnswer={handleAnswer}
+          onNext={() => setCurrentIndex((i) => Math.min(i + 1, statements.length - 1))}
+          onBack={() => setCurrentIndex((i) => Math.max(i - 1, 0))}
+          onFinish={() => setStep(STEPS.RESULTS)}
+        />
+      )}
+
+      {step === STEPS.RESULTS && results && (
+        <Results
+          statements={statements}
+          themes={themes}
+          parties={parties}
+          partiesById={partiesById}
+          answers={answers}
+          rankedAffinities={results.rankedAffinities}
+          userPosition={results.userPosition}
+          partyPositions={results.partyPositions}
+          onRestart={restart}
+        />
+      )}
+    </div>
+  );
+}
