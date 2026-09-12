@@ -2,7 +2,7 @@
 
 Outil web interactif permettant de découvrir son affinité avec les 5 principaux partis en
 lice pour l'élection générale québécoise du 5 octobre 2026 (CAQ, PQ, PLQ, QS, PCQ), à partir
-de 30 énoncés répartis sur 10 enjeux de campagne. La méthodologie s'inspire de
+de 29 énoncés répartis sur 10 enjeux de campagne. La méthodologie s'inspire de
 [smartvote](https://www.smartvote.ch) (Suisse) et du [Wahl-O-Mat](https://www.wahl-o-mat.de)
 (Allemagne), plutôt que de reproduire un outil existant : énoncés à fort pouvoir
 discriminant entre partis, contexte factuel par énoncé, pondération par thème, et un profil
@@ -20,7 +20,7 @@ npm run build    # build de production dans dist/
 
 - `src/data/parties.json` — les 5 partis (nom, chef, référence de couleur CSS).
 - `src/data/themes.json` — les 10 thèmes de l'élection (utilisés aussi comme axes du radar).
-- `src/data/statements.json` — les 30 énoncés, chacun avec un `context` factuel, et pour
+- `src/data/statements.json` — les 29 énoncés, chacun avec un `context` factuel, et pour
   chaque parti une position (échelle 1-5), une source (paraphrasée, non verbatim) et un niveau
   de fiabilité : `sourced`, `inferred`, ou `unknown` (exclu du calcul).
 - `src/lib/scoring.js` — calcul de l'affinité (distance euclidienne pondérée, normalisée en %),
@@ -32,6 +32,11 @@ npm run build    # build de production dans dist/
 
 ## Méthodologie
 
+- Énoncés en langage courant : une seule idée par énoncé, mots du quotidien, aucun numéro de
+  loi ni terme technocratique (12 mots en moyenne). Le détail technique — ce que fait la loi 21,
+  ce qu'est la bourse du carbone — vit dans la ligne de contexte affichée sous l'énoncé, pas
+  dans l'énoncé lui-même. C'est la règle du Wahl-O-Mat : une thèse doit être comprise par
+  quelqu'un sans bagage politique.
 - Échelle Likert à 5 points par énoncé, avec option « cet enjeu n'est pas important pour moi »
   (exclut l'énoncé du calcul plutôt que de le neutraliser à une valeur médiane).
 - Pondération optionnelle par thème (poids 1 à 3) appliquée au calcul de distance.
@@ -41,7 +46,7 @@ npm run build    # build de production dans dist/
   audit sur 4000 électeurs simulés montrait que le PLQ, dont 9 positions manquaient et étaient
   ramenées au centre de l'échelle, arrivait en tête dans 43 % des cas — un artefact de collecte,
   pas de politique. Après recherche ciblée et exclusion des positions restées inconnues, il tombe
-  à 24,8 %. Le classement affiche la complétude des données de chaque parti (ex. « 27/30 doc. »).
+  à 24,8 %. Le classement affiche la complétude des données de chaque parti (ex. « 26/29 doc. »).
 - Affinité par thème (radar) : le même calcul de distance, restreint aux énoncés d'un thème,
   donne un score 0-100 par thème et par parti. Un score d'accord moyen a été écarté : dans trois
   thèmes, les énoncés pointent dans des directions opposées, si bien qu'un répondant disant
@@ -67,11 +72,11 @@ npm run build    # build de production dans dist/
 
 | Parti | Sourcé | Déduit | Non documenté |
 |---|---|---|---|
-| CAQ | 29 | 1 | 0 |
-| PQ | 30 | 0 | 0 |
-| PLQ | 25 | 2 | 3 |
-| QS | 29 | 1 | 0 |
-| PCQ | 29 | 0 | 1 |
+| CAQ | 28 | 1 | 0 |
+| PQ | 29 | 0 | 0 |
+| PLQ | 24 | 2 | 3 |
+| QS | 28 | 1 | 0 |
+| PCQ | 28 | 0 | 1 |
 
 Les quatre positions « non documentées » ne sont pas des trous de collecte mais des absences
 de position publique : le PLQ n'avait pas publié de plateforme environnementale complète à la

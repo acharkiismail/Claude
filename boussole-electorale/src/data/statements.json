@@ -2,7 +2,7 @@
   {
     "id": "s1",
     "themeId": "cout-vie",
-    "text": "Réduire l'impôt des particuliers doit rester prioritaire, quitte à réduire certains services publics.",
+    "text": "Il faut baisser les impôts, même si ça veut dire moins de services publics.",
     "axis": {
       "economic": 1,
       "identity": 0
@@ -39,7 +39,7 @@
   {
     "id": "s2",
     "themeId": "cout-vie",
-    "text": "Les grandes fortunes et les hauts revenus devraient être davantage taxés pour financer les services publics, plutôt que de comprimer les dépenses de l'État.",
+    "text": "Les plus riches devraient payer plus d'impôts pour financer les services publics.",
     "axis": {
       "economic": -1,
       "identity": 0
@@ -76,7 +76,7 @@
   {
     "id": "s3",
     "themeId": "cout-vie",
-    "text": "Des crédits et allocations ciblés pour les ménages à faible revenu sont préférables à une baisse d'impôt générale.",
+    "text": "Mieux vaut aider directement les ménages à faible revenu que baisser les impôts de tout le monde.",
     "axis": {
       "economic": -1,
       "identity": 0
@@ -113,7 +113,7 @@
   {
     "id": "s4",
     "themeId": "sante",
-    "text": "Le secteur privé devrait jouer un rôle plus important dans la prestation de soins de santé financés par l'État.",
+    "text": "Le privé devrait soigner plus de patients, aux frais de l'État.",
     "axis": {
       "economic": 1,
       "identity": 0
@@ -150,7 +150,7 @@
   {
     "id": "s5",
     "themeId": "sante",
-    "text": "L'agence centralisée Santé Québec, créée par la CAQ, devrait être abolie pour redonner plus d'autonomie locale au réseau.",
+    "text": "Santé Québec devrait être aboli et ses pouvoirs rendus aux régions.",
     "axis": {
       "economic": 0,
       "identity": 0
@@ -187,7 +187,7 @@
   {
     "id": "s6",
     "themeId": "sante",
-    "text": "L'État devrait garantir des délais maximaux de traitement, au-delà desquels les patients pourraient se faire soigner au privé aux frais de l'État.",
+    "text": "Si l'attente est trop longue pour une opération, l'État devrait payer pour vous faire soigner au privé.",
     "axis": {
       "economic": 1,
       "identity": 0
@@ -224,7 +224,7 @@
   {
     "id": "s7",
     "themeId": "education",
-    "text": "Les écoles privées qui sélectionnent leurs élèves ne devraient plus recevoir de financement public, ou seulement de façon réduite.",
+    "text": "L'État devrait cesser de financer les écoles privées qui choisissent leurs élèves.",
     "axis": {
       "economic": -1,
       "identity": 0
@@ -261,7 +261,7 @@
   {
     "id": "s8",
     "themeId": "education",
-    "text": "Une consultation publique de grande ampleur (états généraux) devrait être lancée pour revoir en profondeur le système d'éducation.",
+    "text": "Il faut revoir le système d'éducation au complet, avec une grande consultation publique.",
     "axis": {
       "economic": 0,
       "identity": 0
@@ -298,7 +298,7 @@
   {
     "id": "s9",
     "themeId": "education",
-    "text": "Le financement des infrastructures scolaires vétustes devrait être une priorité budgétaire immédiate.",
+    "text": "Réparer les écoles en mauvais état devrait être une priorité budgétaire immédiate.",
     "axis": {
       "economic": 0,
       "identity": 0
@@ -335,7 +335,7 @@
   {
     "id": "s10",
     "themeId": "immigration",
-    "text": "Le Québec devrait réduire ses seuils d'immigration permanente.",
+    "text": "Le Québec devrait accueillir moins d'immigrants permanents.",
     "axis": {
       "economic": 0,
       "identity": 0
@@ -372,7 +372,7 @@
   {
     "id": "s11",
     "themeId": "immigration",
-    "text": "Le Québec devrait obtenir le plein contrôle de l'immigration, incluant la réunification familiale et les demandeurs d'asile, indépendamment d'Ottawa.",
+    "text": "Le Québec devrait décider seul de toute son immigration, sans Ottawa.",
     "axis": {
       "economic": 0,
       "identity": 1
@@ -409,7 +409,7 @@
   {
     "id": "s12",
     "themeId": "immigration",
-    "text": "Il faut davantage limiter l'immigration temporaire (travailleurs, étudiants) pour réduire la pression sur le logement et les services publics.",
+    "text": "Il faut réduire le nombre de travailleurs et d'étudiants étrangers temporaires au Québec.",
     "axis": {
       "economic": 0,
       "identity": 0
@@ -446,7 +446,7 @@
   {
     "id": "s13",
     "themeId": "langue-laicite",
-    "text": "Il faut renforcer la loi 96 en l'étendant aux cégeps pour limiter l'accès aux établissements anglophones.",
+    "text": "L'accès aux cégeps anglophones devrait être plus limité qu'aujourd'hui.",
     "axis": {
       "economic": 0,
       "identity": 0
@@ -483,7 +483,7 @@
   {
     "id": "s14",
     "themeId": "langue-laicite",
-    "text": "La loi 21 sur la laïcité de l'État devrait être maintenue et renforcée.",
+    "text": "L'interdiction du port de signes religieux pour certains employés de l'État devrait être maintenue et élargie.",
     "axis": {
       "economic": 0,
       "identity": 0
@@ -520,7 +520,7 @@
   {
     "id": "s15",
     "themeId": "langue-laicite",
-    "text": "Le gouvernement devrait alléger les exigences linguistiques imposées aux petites entreprises plutôt que les renforcer.",
+    "text": "Les petites entreprises devraient avoir moins d'obligations en matière de français.",
     "axis": {
       "economic": 0,
       "identity": 0
@@ -557,7 +557,7 @@
   {
     "id": "s16",
     "themeId": "environnement",
-    "text": "Le Québec devrait maintenir l'interdiction de toute exploration et exploitation d'hydrocarbures sur son territoire.",
+    "text": "Le Québec devrait continuer d'interdire l'exploitation du pétrole et du gaz sur son territoire.",
     "axis": {
       "economic": 0,
       "identity": 0
@@ -594,7 +594,7 @@
   {
     "id": "s17",
     "themeId": "environnement",
-    "text": "Le gouvernement devrait accélérer la construction de nouveaux barrages hydroélectriques, au besoin en raccourcissant les délais de consultation.",
+    "text": "Il faut construire de nouveaux barrages plus vite, quitte à raccourcir les consultations.",
     "axis": {
       "economic": 0,
       "identity": 0
@@ -631,7 +631,7 @@
   {
     "id": "s18",
     "themeId": "environnement",
-    "text": "Le Québec devrait maintenir le marché du carbone (bourse du carbone) comme outil de lutte aux changements climatiques.",
+    "text": "Le Québec devrait garder la bourse du carbone, qui fait payer les entreprises pour leurs émissions.",
     "axis": {
       "economic": 0,
       "identity": 0
@@ -668,7 +668,7 @@
   {
     "id": "s19",
     "themeId": "economie",
-    "text": "Hydro-Québec devrait demeurer entièrement publique, sans participation privée dans la production ou la distribution.",
+    "text": "Hydro-Québec devrait rester entièrement publique, sans place au privé.",
     "axis": {
       "economic": -1,
       "identity": 0
@@ -705,7 +705,7 @@
   {
     "id": "s20",
     "themeId": "economie",
-    "text": "Le gouvernement devrait réduire fortement les subventions directes et crédits d'impôt ciblés aux grandes entreprises privées.",
+    "text": "L'État devrait beaucoup moins subventionner les grandes entreprises.",
     "axis": {
       "economic": 0,
       "identity": 0
@@ -742,7 +742,7 @@
   {
     "id": "s21",
     "themeId": "economie",
-    "text": "Il faut prioriser l'attraction de grands projets industriels (batteries, minéraux critiques), même avec d'importants incitatifs fiscaux.",
+    "text": "Le Québec devrait continuer d'attirer de grandes usines avec de l'argent public.",
     "axis": {
       "economic": -1,
       "identity": 0
@@ -774,12 +774,12 @@
         "reliability": "sourced"
       }
     },
-    "context": "Le Québec mise depuis plusieurs années sur la filière batterie et les minéraux critiques comme moteur de sa transition économique."
+    "context": "Le Québec mise depuis plusieurs années sur la filière batterie et les minéraux critiques, avec des incitatifs fiscaux majeurs — la faillite de Northvolt a relancé le débat."
   },
   {
     "id": "s22",
     "themeId": "logement",
-    "text": "Le gouvernement devrait créer un registre national des loyers et encadrer plus strictement les hausses de loyer.",
+    "text": "Les hausses de loyer devraient être encadrées plus strictement par l'État.",
     "axis": {
       "economic": -1,
       "identity": 0
@@ -811,12 +811,12 @@
         "reliability": "sourced"
       }
     },
-    "context": "Contrairement à plusieurs provinces canadiennes, le Québec ne dispose pas d'un registre public permettant de connaître le loyer précédent d'un logement."
+    "context": "Le Québec n'a pas de registre public des loyers permettant de connaître le loyer payé par le locataire précédent, contrairement à plusieurs provinces canadiennes."
   },
   {
     "id": "s23",
     "themeId": "logement",
-    "text": "Le Québec devrait investir massivement dans la construction de logements sociaux et communautaires financés par l'État.",
+    "text": "L'État devrait construire beaucoup plus de logements sociaux.",
     "axis": {
       "economic": -1,
       "identity": 0
@@ -853,7 +853,7 @@
   {
     "id": "s24",
     "themeId": "logement",
-    "text": "Il faut alléger la réglementation et accélérer les processus municipaux pour stimuler la construction par le secteur privé.",
+    "text": "Il faut réduire la paperasse et les délais de permis pour qu'on construise plus vite.",
     "axis": {
       "economic": 1,
       "identity": 0
@@ -890,7 +890,7 @@
   {
     "id": "s25",
     "themeId": "identite",
-    "text": "Le Québec devrait tenir un référendum sur l'indépendance au cours du prochain mandat.",
+    "text": "Le Québec devrait tenir un référendum sur l'indépendance d'ici quatre ans.",
     "axis": {
       "economic": 0,
       "identity": 1
@@ -925,46 +925,9 @@
     "context": "La tenue d'un référendum sur la souveraineté nécessiterait l'adoption d'une loi référendaire par l'Assemblée nationale."
   },
   {
-    "id": "s26",
-    "themeId": "identite",
-    "text": "Le Québec devrait rapatrier davantage de pouvoirs d'Ottawa (immigration, culture, etc.), sans nécessairement viser l'indépendance.",
-    "axis": {
-      "economic": 0,
-      "identity": 1
-    },
-    "positions": {
-      "caq": {
-        "value": 5,
-        "source": "Ligne autonomiste constante : rapatriement ciblé de pouvoirs (surtout en immigration) plutôt que l'indépendance — Le Devoir, « CAQ n'acceptera pas un non »",
-        "reliability": "sourced"
-      },
-      "pq": {
-        "value": 3,
-        "reliability": "sourced",
-        "source": "Position à deux faces : le PQ réclame activement le rapatriement de pouvoirs (pleins pouvoirs en immigration et en culture, appui à un référendum sectoriel sur l'immigration, rétablissement d'un rapport de force avec Ottawa), mais Plamondon attaque l'étiquette « autonomiste » et présente le fédéralisme comme une impasse — La Presse, 4 sept. 2026, et Le Devoir, 2026"
-      },
-      "plq": {
-        "value": 3,
-        "source": "Réclame certains pouvoirs additionnels (immigration temporaire) dans un cadre de fédéralisme coopératif, sans démarche systématique de rapatriement — Les Affaires, immigration",
-        "reliability": "sourced"
-      },
-      "qs": {
-        "value": 3,
-        "source": "Réclame le rapatriement du contrôle de l'immigration, mais comme étape instrumentale vers un projet plus large d'indépendance — La Presse, févr. 2024",
-        "reliability": "sourced"
-      },
-      "pcq": {
-        "value": 5,
-        "source": "Veut un mécanisme permanent pour contrer les intrusions d'Ottawa et rapatrier des pouvoirs, sans viser l'indépendance — La Presse, 8 avril 2026",
-        "reliability": "sourced"
-      }
-    },
-    "context": "Le rapatriement de pouvoirs sans indépendance formelle est au cœur du positionnement « autonomiste » de plusieurs partis."
-  },
-  {
     "id": "s27",
     "themeId": "identite",
-    "text": "Le fédéralisme canadien actuel sert bien les intérêts du Québec et ne nécessite pas de changement majeur.",
+    "text": "Le Québec est bien servi par le Canada tel qu'il est aujourd'hui.",
     "axis": {
       "economic": 0,
       "identity": -1
@@ -1001,7 +964,7 @@
   {
     "id": "s28",
     "themeId": "role-etat",
-    "text": "Le gouvernement devrait réduire significativement la taille de la fonction publique.",
+    "text": "Il faut réduire de façon importante le nombre de fonctionnaires.",
     "axis": {
       "economic": 1,
       "identity": 0
@@ -1038,7 +1001,7 @@
   {
     "id": "s29",
     "themeId": "role-etat",
-    "text": "L'État devrait conserver un rôle actif dans l'économie via les sociétés d'État (Hydro-Québec, Investissement Québec) plutôt que de laisser le marché décider.",
+    "text": "L'État devrait rester un acteur économique important, plutôt que de laisser faire le marché.",
     "axis": {
       "economic": -1,
       "identity": 0
@@ -1075,7 +1038,7 @@
   {
     "id": "s30",
     "themeId": "role-etat",
-    "text": "Il faut réduire la bureaucratie et les dédoublements entre ministères et organismes pour améliorer l'efficacité des services publics.",
+    "text": "Il faut couper dans la bureaucratie pour rendre les services publics plus efficaces.",
     "axis": {
       "economic": 1,
       "identity": 0
