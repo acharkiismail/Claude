@@ -59,7 +59,7 @@ export default function Intro({ onStart, statementCount, themeCount }) {
         </summary>
         <div className="mt-3 space-y-2.5 leading-relaxed">
           <p>
-            La démarche s'inspire des boussoles électorales les plus rigoureuses au monde —
+            La démarche s'inspire des outils d'aide au vote les plus rigoureux au monde —
             <strong className="text-[var(--ink)]"> smartvote</strong> (Suisse) et le{" "}
             <strong className="text-[var(--ink)]">Wahl-O-Mat</strong> (Allemagne) — qui
             privilégient des énoncés à fort pouvoir discriminant (sur lesquels les partis

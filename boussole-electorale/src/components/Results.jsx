@@ -55,7 +55,7 @@ export default function Results({
         Vos résultats
       </p>
       <h1 className="font-display mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-        Vous êtes le plus proche de{" "}
+        Vous êtes le plus proche {top.party.article}{" "}
         <span style={{ color: partyColor(top.party) }}>{top.party.name}</span>
       </h1>
       <p className="mt-2 text-sm text-[var(--ink-secondary)]">

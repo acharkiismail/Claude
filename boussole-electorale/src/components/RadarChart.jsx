@@ -39,7 +39,7 @@ export default function RadarChart({ axes, userValues, party, partyValues, size 
       role="img"
       aria-label={
         party
-          ? `Profil par enjeu : vous comparé à ${party.name}`
+          ? `Profil par enjeu : vous comparé ${party.articleA} ${party.name}`
           : "Votre profil par enjeu"
       }
     >

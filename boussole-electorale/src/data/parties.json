@@ -5,7 +5,9 @@
     "shortName": "CAQ",
     "leader": "Christine Fréchette",
     "colorVar": "--party-caq",
-    "website": "https://coalitionavenirquebec.org"
+    "website": "https://coalitionavenirquebec.org",
+    "article": "de la",
+    "articleA": "à la"
   },
   {
     "id": "pq",
@@ -13,7 +15,9 @@
     "shortName": "PQ",
     "leader": "Paul St-Pierre Plamondon",
     "colorVar": "--party-pq",
-    "website": "https://pq.org"
+    "website": "https://pq.org",
+    "article": "du",
+    "articleA": "au"
   },
   {
     "id": "plq",
@@ -21,7 +25,9 @@
     "shortName": "PLQ",
     "leader": "Charles Milliard",
     "colorVar": "--party-plq",
-    "website": "https://plq.org"
+    "website": "https://plq.org",
+    "article": "du",
+    "articleA": "au"
   },
   {
     "id": "qs",
@@ -29,7 +35,9 @@
     "shortName": "QS",
     "leader": "Ruba Ghazal",
     "colorVar": "--party-qs",
-    "website": "https://quebecsolidaire.net"
+    "website": "https://quebecsolidaire.net",
+    "article": "de",
+    "articleA": "à"
   },
   {
     "id": "pcq",
@@ -37,6 +45,8 @@
     "shortName": "PCQ",
     "leader": "Éric Duhaime",
     "colorVar": "--party-pcq",
-    "website": "https://conservateur.quebec"
+    "website": "https://conservateur.quebec",
+    "article": "du",
+    "articleA": "au"
   }
 ]

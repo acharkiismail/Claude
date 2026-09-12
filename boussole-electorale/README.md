@@ -1,10 +1,10 @@
-# Boussole électorale — Élections québécoises 2026
+# Repère — Élections québécoises 2026
 
 Outil web interactif permettant de découvrir son affinité avec les 5 principaux partis en
 lice pour l'élection générale québécoise du 5 octobre 2026 (CAQ, PQ, PLQ, QS, PCQ), à partir
 de 30 énoncés répartis sur 10 enjeux de campagne. La méthodologie s'inspire de
 [smartvote](https://www.smartvote.ch) (Suisse) et du [Wahl-O-Mat](https://www.wahl-o-mat.de)
-(Allemagne), plutôt que de reproduire une boussole existante : énoncés à fort pouvoir
+(Allemagne), plutôt que de reproduire un outil existant : énoncés à fort pouvoir
 discriminant entre partis, contexte factuel par énoncé, pondération par thème, et un profil
 par enjeu façon « smartspider » plutôt qu'un score global unique.
 

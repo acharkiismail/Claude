@@ -7,7 +7,7 @@ export default function Header({ stepIndex, stepCount }) {
         <div className="flex items-center gap-2">
           <CompassMark />
           <span className="font-display text-[15px] font-semibold tracking-tight text-[var(--ink)]">
-            Boussole <span style={{ color: "var(--accent)" }}>2026</span>
+            Repère <span style={{ color: "var(--accent)" }}>2026</span>
           </span>
         </div>
         {stepIndex != null && (
