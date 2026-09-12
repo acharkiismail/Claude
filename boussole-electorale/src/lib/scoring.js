@@ -38,7 +38,7 @@ export function computeAffinities(statements, parties, userAnswers, themeWeights
     .sort((a, b) => b.affinity - a.affinity);
 }
 
-// Positionne un vecteur de réponses sur deux axes prédéfinis :
+// Positionne un vecteur de réponses sur deux axes prédéfinis (vue simplifiée) :
 // économique (gauche <-> droite) et identité nationale (fédéraliste <-> souverainiste).
 export function computeAxisPosition(statements, answers) {
   const totals = { economic: { sum: 0, count: 0 }, identity: { sum: 0, count: 0 } };
@@ -59,6 +59,48 @@ export function computeAxisPosition(statements, answers) {
     economic: totals.economic.count > 0 ? totals.economic.sum / totals.economic.count : 0,
     identity: totals.identity.count > 0 ? totals.identity.sum / totals.identity.count : 0,
   };
+}
+
+// Profil par enjeu (façon "smartspider") : un score 0-100 par thème, calculé comme
+// le degré d'accord moyen avec les énoncés de ce thème. 0 = désaccord total avec
+// l'ensemble des énoncés du thème, 100 = accord total.
+export function computeThemeScores(statements, themes, answers) {
+  const totals = Object.fromEntries(themes.map((t) => [t.id, { sum: 0, count: 0 }]));
+
+  for (const statement of statements) {
+    const value = answers[statement.id];
+    if (value == null) continue;
+    const bucket = totals[statement.themeId];
+    bucket.sum += ((value - 1) / 4) * 100;
+    bucket.count += 1;
+  }
+
+  return Object.fromEntries(
+    themes.map((t) => {
+      const bucket = totals[t.id];
+      return [t.id, bucket.count > 0 ? bucket.sum / bucket.count : null];
+    })
+  );
+}
+
+// Les énoncés où vous et un parti donné convergez ou divergez le plus,
+// utilisés pour expliquer "pourquoi ce match" plutôt que de livrer un seul %.
+export function computeMatchHighlights(statements, answers, partyId, count = 3) {
+  const scored = [];
+  for (const statement of statements) {
+    const userValue = answers[statement.id];
+    const partyValue = statement.positions[partyId]?.value;
+    if (userValue == null || partyValue == null) continue;
+    scored.push({ statement, userValue, partyValue, gap: Math.abs(userValue - partyValue) });
+  }
+
+  const agreements = [...scored].sort((a, b) => a.gap - b.gap).slice(0, count);
+  const disagreements = [...scored]
+    .sort((a, b) => b.gap - a.gap)
+    .slice(0, count)
+    .filter((s) => s.gap >= 2);
+
+  return { agreements, disagreements };
 }
 
 export function partyAnswersFromPositions(statements, partyId) {

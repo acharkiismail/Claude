@@ -1,16 +1,87 @@
 @import "tailwindcss";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/fraunces/500.css";
+@import "@fontsource/fraunces/600.css";
+@import "@fontsource/fraunces/700.css";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
 }
 
+/* ---- Design tokens -----------------------------------------------------
+   Party colours are validated as a categorical set (CVD + normal-vision
+   separation) with `dataviz`'s validate_palette.js; light/dark steps are
+   independent, not a straight invert. The "vous" marker deliberately does
+   NOT compete in that hue set — it's rendered in neutral ink + a distinct
+   shape so it never depends on colour to read for colourblind users.
+------------------------------------------------------------------------- */
 :root {
   color-scheme: light;
+
+  --party-caq: #0e93b0;
+  --party-pq: #2b4a9e;
+  --party-plq: #b91c1c;
+  --party-qs: #ef8617;
+  --party-pcq: #7c3aed;
+
+  --accent: #0f766e;
+  --accent-strong: #0b5b55;
+  --accent-soft: #ccfbf1;
+  --on-accent: #ffffff;
+
+  --disagree-strong: #be123c;
+  --disagree: #fda4af;
+  --neutral-likert: #e2e8f0;
+  --agree: #5eead4;
+  --agree-strong: #0f766e;
+
+  --status-good: #0ca30c;
+  --status-warning: #b45309;
+
+  --surface: #fcfcfb;
+  --surface-raised: #ffffff;
+  --page: #f7f6f2;
+  --ink: #14140f;
+  --ink-secondary: #52514e;
+  --ink-muted: #898781;
+  --hairline: #e5e3db;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
+
+    --party-caq: #2e93b3;
+    --party-pq: #3a5ce0;
+    --party-plq: #d64848;
+    --party-qs: #a88f1f;
+    --party-pcq: #a83f9e;
+
+    --accent: #2dd4bf;
+    --accent-strong: #5eead4;
+    --accent-soft: #0f3d3a;
+    --on-accent: #06201d;
+
+    --disagree-strong: #fb7185;
+    --disagree: #7f1d2e;
+    --neutral-likert: #3a3a35;
+    --agree: #115e56;
+    --agree-strong: #2dd4bf;
+
+    --status-good: #34c759;
+    --status-warning: #fbbf24;
+
+    --surface: #1a1a17;
+    --surface-raised: #212420;
+    --page: #101110;
+    --ink: #f7f6f2;
+    --ink-secondary: #c3c2b7;
+    --ink-muted: #8f8d85;
+    --hairline: #2e2d28;
   }
 }
 
@@ -19,10 +90,17 @@ html {
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-sans);
   font-feature-settings: "cv11", "ss01";
 }
 
 ::selection {
-  @apply bg-sky-300/40;
+  background: var(--accent-soft);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-feature-settings: "ss01";
 }

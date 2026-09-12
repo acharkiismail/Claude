@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import statements from "./data/statements.json";
 import themes from "./data/themes.json";
 import parties from "./data/parties.json";
+import Header from "./components/Header";
 import Intro from "./components/Intro";
 import ThemeWeighting from "./components/ThemeWeighting";
 import Questionnaire from "./components/Questionnaire";
@@ -9,10 +10,12 @@ import Results from "./components/Results";
 import {
   computeAffinities,
   computeAxisPosition,
+  computeThemeScores,
   partyAnswersFromPositions,
 } from "./lib/scoring";
 
 const STEPS = { INTRO: "intro", WEIGHTING: "weighting", QUIZ: "quiz", RESULTS: "results" };
+const STEP_ORDER = [STEPS.INTRO, STEPS.WEIGHTING, STEPS.QUIZ, STEPS.RESULTS];
 
 const defaultWeights = Object.fromEntries(themes.map((t) => [t.id, 1]));
 const themesById = Object.fromEntries(themes.map((t) => [t.id, t]));
@@ -50,11 +53,20 @@ export default function App() {
       party,
       position: computeAxisPosition(statements, partyAnswersFromPositions(statements, party.id)),
     }));
-    return { rankedAffinities, userPosition, partyPositions };
+    const userThemeScores = computeThemeScores(statements, themes, answers);
+    const partyThemeScores = Object.fromEntries(
+      parties.map((party) => [
+        party.id,
+        computeThemeScores(statements, themes, partyAnswersFromPositions(statements, party.id)),
+      ])
+    );
+    return { rankedAffinities, userPosition, partyPositions, userThemeScores, partyThemeScores };
   }, [step, answers, weights]);
 
   return (
-    <div className="min-h-dvh bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-dvh" style={{ backgroundColor: "var(--page)" }}>
+      <Header stepIndex={STEP_ORDER.indexOf(step)} stepCount={STEP_ORDER.length} />
+
       {step === STEPS.INTRO && (
         <Intro
           statementCount={statements.length}
@@ -99,6 +111,9 @@ export default function App() {
           rankedAffinities={results.rankedAffinities}
           userPosition={results.userPosition}
           partyPositions={results.partyPositions}
+          themeAxes={themes}
+          userThemeScores={results.userThemeScores}
+          partyThemeScores={results.partyThemeScores}
           onRestart={restart}
         />
       )}

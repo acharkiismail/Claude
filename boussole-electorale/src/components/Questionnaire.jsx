@@ -17,26 +17,33 @@ export default function Questionnaire({
   const progress = ((currentIndex + 1) / statements.length) * 100;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-2rem)] max-w-2xl flex-col px-4 py-8 sm:py-12">
+    <div className="mx-auto flex min-h-[calc(100dvh-3.5rem)] max-w-2xl flex-col px-4 py-6 sm:px-6 sm:py-10">
       <div>
-        <div className="flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+        <div className="flex items-center justify-between text-xs font-medium text-[var(--ink-muted)]">
           <span>
             Énoncé {currentIndex + 1} / {statements.length}
           </span>
-          <span className="text-sky-600 dark:text-sky-400">{theme.shortName}</span>
+          <span className="font-semibold" style={{ color: "var(--accent-strong)" }}>
+            {theme.shortName}
+          </span>
         </div>
-        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full" style={{ backgroundColor: "var(--hairline)" }}>
           <div
-            className="h-full rounded-full bg-sky-500 transition-all duration-300"
-            style={{ width: `${progress}%` }}
+            className="h-full rounded-full transition-all duration-300"
+            style={{ width: `${progress}%`, backgroundColor: "var(--accent)" }}
           />
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col justify-center py-10">
-        <p className="text-xl font-semibold leading-snug text-slate-900 sm:text-2xl dark:text-slate-50">
+      <div className="flex flex-1 flex-col justify-center py-8 sm:py-10">
+        <p className="font-display text-xl font-semibold leading-snug sm:text-2xl">
           {statement.text}
         </p>
+        {statement.context && (
+          <p className="mt-3 border-l-2 pl-3 text-sm leading-relaxed text-[var(--ink-secondary)]" style={{ borderColor: "var(--hairline)" }}>
+            {statement.context}
+          </p>
+        )}
 
         <div className="mt-8">
           <LikertScale
@@ -46,12 +53,12 @@ export default function Questionnaire({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 border-t border-slate-200 pt-5 dark:border-slate-800">
+      <div className="flex items-center justify-between gap-3 border-t pt-5" style={{ borderColor: "var(--hairline)" }}>
         <button
           type="button"
           onClick={onBack}
           disabled={currentIndex === 0}
-          className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-600 disabled:opacity-0 dark:text-slate-300"
+          className="rounded-xl px-4 py-2.5 text-sm font-medium text-[var(--ink-secondary)] disabled:opacity-0"
         >
           ← Précédent
         </button>
@@ -60,7 +67,8 @@ export default function Questionnaire({
             type="button"
             onClick={onFinish}
             disabled={!hasAnswer}
-            className="rounded-xl bg-sky-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl px-6 py-2.5 text-sm font-semibold shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+            style={{ backgroundColor: "var(--accent)", color: "var(--on-accent)" }}
           >
             Voir mes résultats →
           </button>
@@ -69,7 +77,8 @@ export default function Questionnaire({
             type="button"
             onClick={onNext}
             disabled={!hasAnswer}
-            className="rounded-xl bg-sky-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl px-6 py-2.5 text-sm font-semibold shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+            style={{ backgroundColor: "var(--accent)", color: "var(--on-accent)" }}
           >
             Suivant →
           </button>

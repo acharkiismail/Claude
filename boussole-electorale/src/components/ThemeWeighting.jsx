@@ -6,28 +6,23 @@ const LEVELS = [
 
 export default function ThemeWeighting({ themes, weights, onChange, onContinue, onSkip }) {
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 sm:py-14">
-      <p className="text-sm font-medium uppercase tracking-wide text-sky-600 dark:text-sky-400">
-        Étape 1 sur 2
-      </p>
-      <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
+    <div className="mx-auto max-w-2xl px-4 py-8 sm:py-12 sm:px-6">
+      <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
         Quelle importance accordez-vous à chaque enjeu ?
       </h1>
-      <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-        Cette pondération influencera votre résultat final : les enjeux jugés plus importants
-        auront plus de poids dans le calcul d'affinité. Vous pouvez aussi passer cette étape et
+      <p className="mt-3 text-sm leading-relaxed text-[var(--ink-secondary)]">
+        Cette pondération influence votre résultat final : les enjeux jugés plus importants
+        comptent davantage dans le calcul d'affinité. Vous pouvez aussi passer cette étape et
         garder tous les enjeux à poids égal.
       </p>
 
-      <div className="mt-8 space-y-3">
+      <div className="mt-7 space-y-2.5">
         {themes.map((theme) => (
           <div
             key={theme.id}
-            className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900"
+            className="flex flex-col gap-3 rounded-xl border border-[var(--hairline)] bg-[var(--surface)] p-4 sm:flex-row sm:items-center sm:justify-between"
           >
-            <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-              {theme.name}
-            </span>
+            <span className="text-sm font-medium text-[var(--ink)]">{theme.name}</span>
             <div className="grid grid-cols-3 gap-1.5">
               {LEVELS.map((level) => {
                 const selected = (weights[theme.id] ?? 1) === level.value;
@@ -36,11 +31,12 @@ export default function ThemeWeighting({ themes, weights, onChange, onContinue, 
                     key={level.value}
                     type="button"
                     onClick={() => onChange(theme.id, level.value)}
-                    className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                    className="rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors"
+                    style={
                       selected
-                        ? "border-sky-500 bg-sky-500 text-white"
-                        : "border-slate-200 bg-white text-slate-600 hover:border-sky-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
-                    }`}
+                        ? { backgroundColor: "var(--accent)", borderColor: "var(--accent)", color: "var(--on-accent)" }
+                        : { borderColor: "var(--hairline)", color: "var(--ink-secondary)" }
+                    }
                   >
                     {level.label}
                   </button>
@@ -55,14 +51,15 @@ export default function ThemeWeighting({ themes, weights, onChange, onContinue, 
         <button
           type="button"
           onClick={onSkip}
-          className="text-sm font-medium text-slate-500 underline-offset-2 hover:underline dark:text-slate-400"
+          className="text-sm font-medium text-[var(--ink-secondary)] underline-offset-2 hover:underline"
         >
           Passer cette étape (poids égal)
         </button>
         <button
           type="button"
           onClick={onContinue}
-          className="rounded-xl bg-sky-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-700"
+          className="rounded-xl px-6 py-3 text-sm font-semibold shadow-sm"
+          style={{ backgroundColor: "var(--accent)", color: "var(--on-accent)" }}
         >
           Continuer vers le questionnaire →
         </button>
