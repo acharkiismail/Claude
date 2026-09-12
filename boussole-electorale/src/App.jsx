@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import statements from "./data/statements.json";
 import themes from "./data/themes.json";
 import parties from "./data/parties.json";
@@ -7,12 +7,6 @@ import Intro from "./components/Intro";
 import ThemeWeighting from "./components/ThemeWeighting";
 import Questionnaire from "./components/Questionnaire";
 import Results from "./components/Results";
-import {
-  computeAffinities,
-  computeAxisPosition,
-  computeThemeScores,
-  partyAnswersFromPositions,
-} from "./lib/scoring";
 
 const STEPS = { INTRO: "intro", WEIGHTING: "weighting", QUIZ: "quiz", RESULTS: "results" };
 const STEP_ORDER = [STEPS.INTRO, STEPS.WEIGHTING, STEPS.QUIZ, STEPS.RESULTS];
@@ -44,24 +38,6 @@ export default function App() {
     setCurrentIndex(0);
     setStep(STEPS.INTRO);
   };
-
-  const results = useMemo(() => {
-    if (step !== STEPS.RESULTS) return null;
-    const rankedAffinities = computeAffinities(statements, parties, answers, weights);
-    const userPosition = computeAxisPosition(statements, answers);
-    const partyPositions = parties.map((party) => ({
-      party,
-      position: computeAxisPosition(statements, partyAnswersFromPositions(statements, party.id)),
-    }));
-    const userThemeScores = computeThemeScores(statements, themes, answers);
-    const partyThemeScores = Object.fromEntries(
-      parties.map((party) => [
-        party.id,
-        computeThemeScores(statements, themes, partyAnswersFromPositions(statements, party.id)),
-      ])
-    );
-    return { rankedAffinities, userPosition, partyPositions, userThemeScores, partyThemeScores };
-  }, [step, answers, weights]);
 
   return (
     <div className="min-h-dvh" style={{ backgroundColor: "var(--page)" }}>
@@ -101,19 +77,14 @@ export default function App() {
         />
       )}
 
-      {step === STEPS.RESULTS && results && (
+      {step === STEPS.RESULTS && (
         <Results
           statements={statements}
           themes={themes}
           parties={parties}
           partiesById={partiesById}
           answers={answers}
-          rankedAffinities={results.rankedAffinities}
-          userPosition={results.userPosition}
-          partyPositions={results.partyPositions}
-          themeAxes={themes}
-          userThemeScores={results.userThemeScores}
-          partyThemeScores={results.partyThemeScores}
+          weights={weights}
           onRestart={restart}
         />
       )}

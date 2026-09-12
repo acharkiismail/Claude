@@ -47,8 +47,8 @@
     "positions": {
       "caq": {
         "value": 2,
-        "source": "Aucune proposition de nouvel impôt sur la fortune; approche budgétaire prudente axée sur des mesures ciblées existantes — cadre financier CAQ, août 2026",
-        "reliability": "inferred"
+        "reliability": "inferred",
+        "source": "Aucune proposition de taxation des fortunes; la CAQ baisse plutôt l'impôt des PME et bonifie le crédit pour aînés à revenu modique, et la couverture comparative la range parmi les partis qui financent leurs engagements par l'efficacité de l'État, face à QS isolé sur la taxe sur la fortune — Le Devoir, 1er sept. 2026 (opposition établie par choix fiscal contraire, sans citation de rejet explicite)"
       },
       "pq": {
         "value": 4,
@@ -57,8 +57,8 @@
       },
       "plq": {
         "value": 2,
-        "source": "Aucune mesure de fiscalité accrue sur les hauts revenus ou les fortunes trouvée; priorité aux baisses ciblées pour les PME — Radio-Canada, plateforme économique PLQ",
-        "reliability": "inferred"
+        "reliability": "sourced",
+        "source": "A rejeté publiquement la taxe sur les grandes fortunes proposée par QS; l'orientation fiscale du parti va vers des allègements aux PME plutôt que des hausses sur les hauts revenus — La Presse, 3 sept. 2026"
       },
       "qs": {
         "value": 5,
@@ -172,9 +172,9 @@
         "reliability": "sourced"
       },
       "qs": {
-        "value": 3,
-        "source": "Position non explicitement documentée dans la couverture de campagne 2026 trouvée; QS priorise plutôt la lutte à la privatisation et un réseau de CLSC — valeur neutre par défaut",
-        "reliability": "inferred"
+        "value": 2,
+        "reliability": "inferred",
+        "source": "QS ne reprend pas la promesse d'abolition portée par le PQ, le PLQ et le PCQ : son axe santé est la première ligne (400 points d'accès type CLSC, 147 à 200 CLSC d'ici 2030) et la décentralisation des mégastructures vers les régions — La Presse, 5 sept. 2026 (aucune position explicite sur l'existence même de Santé Québec trouvée dans un média établi)"
       },
       "pcq": {
         "value": 5,
@@ -269,8 +269,8 @@
     "positions": {
       "caq": {
         "value": 2,
-        "source": "Aucun état général proposé; le gouvernement a déjà mené sa propre réforme de gouvernance scolaire (loi 23) — position déduite, non documentée explicitement",
-        "reliability": "inferred"
+        "reliability": "sourced",
+        "source": "Interrogée lors d'une assemblée à Longueuil, Fréchette a dit douter que des états généraux soient la meilleure solution, invoquant ceux de 1995 : beaucoup d'énergie pour un résultat décevant. Pas de refus catégorique, mais aucun engagement, contrairement au PQ, au PLQ et à QS — Noovo Info, 2026"
       },
       "pq": {
         "value": 5,
@@ -283,9 +283,9 @@
         "reliability": "sourced"
       },
       "qs": {
-        "value": 4,
-        "source": "Vise une réforme structurelle profonde (Réseau commun d'école) légiférée dans les 100 premiers jours, dans un esprit similaire — communiqué QS, 2026 (inféré)",
-        "reliability": "inferred"
+        "value": 5,
+        "reliability": "sourced",
+        "source": "Un gouvernement solidaire tiendrait des états généraux pour repenser en profondeur le modèle éducatif, dans un plan de 340 M$ visant à réduire le décrochage de moitié d'ici 2030 — Radio-Canada et La Presse, 31 août 2026"
       },
       "pcq": {
         "value": 2,
@@ -315,9 +315,9 @@
         "reliability": "sourced"
       },
       "plq": {
-        "value": 3,
-        "source": "Aucun engagement chiffré spécifique aux infrastructures trouvé; priorité mise sur les ressources spécialisées — position neutre par défaut",
-        "reliability": "inferred"
+        "value": 5,
+        "reliability": "sourced",
+        "source": "Porterait à 75 % la part du Plan québécois des infrastructures consacrée au maintien d'actifs, jusqu'à ce que 80 % des infrastructures publiques soient en état satisfaisant (54 % aujourd'hui), en citant explicitement le parc scolaire vétuste — Les Affaires, jour 7, et Le Devoir, 2026"
       },
       "qs": {
         "value": 3,
@@ -325,9 +325,9 @@
         "reliability": "sourced"
       },
       "pcq": {
-        "value": 2,
-        "source": "Priorise le libre choix et l'autonomie des écoles plutôt qu'un engagement chiffré en infrastructures publiques — position déduite",
-        "reliability": "inferred"
+        "value": 3,
+        "reliability": "sourced",
+        "source": "Dit vouloir mieux entretenir routes, ponts, écoles et hôpitaux, mais son cadre financier du 9 sept. 2026 ne traite pas des infrastructures; Duhaime dit n'avoir pas touché au Plan québécois des infrastructures et renvoie son plan à plus tard — Le Devoir et La Presse, 9 sept. 2026"
       }
     },
     "context": "Une partie importante du parc immobilier scolaire québécois est jugée vétuste ou en mauvais état par le ministère lui-même."
@@ -611,9 +611,9 @@
         "reliability": "sourced"
       },
       "plq": {
-        "value": 3,
-        "source": "Aucune position claire et récente trouvée sur la construction de nouveaux barrages — position neutre par défaut",
-        "reliability": "inferred"
+        "value": null,
+        "reliability": "unknown",
+        "source": "Aucune position trouvée sur la construction de nouveaux barrages ni sur les délais d'autorisation en énergie. Le PLQ n'avait pas publié de plateforme environnementale complète à la fin août 2026 — Le Devoir, 2026"
       },
       "qs": {
         "value": 1,
@@ -622,8 +622,8 @@
       },
       "pcq": {
         "value": 4,
-        "source": "Position non distinguée clairement de la CAQ dans la couverture trouvée; orientation générale favorable au développement énergétique et à l'investissement privé — inféré",
-        "reliability": "inferred"
+        "reliability": "sourced",
+        "source": "Duhaime appuie la construction de nouveaux barrages, jugeant la capacité de production d'Hydro-Québec comme le principal obstacle à l'électrification; sur les délais, son engagement est générique (couper 30 % de la réglementation, réviser les codes en environnement et ressources naturelles) et non spécifique aux barrages — Le Devoir, août 2026"
       }
     },
     "context": "Hydro-Québec anticipe un déficit de capacité de production dans les prochaines années, relançant le débat sur de nouveaux grands barrages."
@@ -649,8 +649,8 @@
       },
       "plq": {
         "value": 4,
-        "source": "Aucune opposition trouvée au marché du carbone; position présumée alignée sur le consensus des partis non-conservateurs — inféré",
-        "reliability": "inferred"
+        "reliability": "inferred",
+        "source": "Aucune déclaration libérale citée sur le marché du carbone, ni cible de GES chiffrée; la couverture de campagne range le PLQ parmi les partis favorables au maintien de l'outil, par contraste avec le PCQ qui veut l'abolir — La Presse, 29 août 2026"
       },
       "qs": {
         "value": 5,
@@ -685,9 +685,9 @@
         "reliability": "sourced"
       },
       "plq": {
-        "value": 4,
-        "source": "Le porte-parole énergie du PLQ s'est historiquement opposé à l'ouverture du réseau au privé faite par la CAQ — position du parti, non confirmée personnellement par Milliard",
-        "reliability": "inferred"
+        "value": null,
+        "reliability": "unknown",
+        "source": "Aucun engagement de Charles Milliard à garder Hydro-Québec entièrement publique, ni ouverture explicite au privé, n'a pu être documenté pour la campagne 2026"
       },
       "qs": {
         "value": 5,
@@ -695,9 +695,9 @@
         "reliability": "sourced"
       },
       "pcq": {
-        "value": 2,
-        "source": "Position 2026 non confirmée clairement; orientation historique du parti plus ouverte à la concurrence privée — inféré, à valider",
-        "reliability": "inferred"
+        "value": null,
+        "reliability": "unknown",
+        "source": "Aucune position du PCQ en 2026 sur la propriété d'Hydro-Québec, l'ouverture à la concurrence de la production ou de la distribution n'a pu être documentée; la plateforme officielle du parti est restée inaccessible pendant la recherche"
       }
     },
     "context": "Une réforme énergétique adoptée en 2025 a ouvert la porte à une plus grande participation du secteur privé dans la production d'électricité."
@@ -722,9 +722,9 @@
         "reliability": "sourced"
       },
       "plq": {
-        "value": 3,
-        "source": "Aucune position explicite trouvée sur la réduction des subventions aux grandes entreprises — position neutre par défaut",
-        "reliability": "inferred"
+        "value": 4,
+        "reliability": "inferred",
+        "source": "Financerait ses allègements fiscaux aux PME en réduisant les subventions versées aux multinationales, selon la couverture de campagne; le porte-parole en économie dénonce les centaines de millions perdus dans de mauvais projets — La Presse, 21 août 2026 (lien de financement non confirmé directement)"
       },
       "qs": {
         "value": 4,
@@ -759,9 +759,9 @@
         "reliability": "sourced"
       },
       "plq": {
-        "value": 3,
-        "source": "Aucune position claire et spécifique trouvée sur les mégaprojets industriels et incitatifs fiscaux — position neutre par défaut",
-        "reliability": "inferred"
+        "value": null,
+        "reliability": "unknown",
+        "source": "Aucune position du PLQ trouvée sur l'attraction de mégaprojets industriels au prix d'importants incitatifs fiscaux"
       },
       "qs": {
         "value": 1,
@@ -870,9 +870,9 @@
         "reliability": "sourced"
       },
       "plq": {
-        "value": 3,
-        "source": "Aucune stratégie de déréglementation majeure documentée comme axe principal — position neutre par défaut",
-        "reliability": "inferred"
+        "value": 5,
+        "reliability": "sourced",
+        "source": "Vise 100 000 logements par année en accélérant la délivrance des permis municipaux, en imposant des délais au gouvernement pour ses propres autorisations et en récompensant financièrement les municipalités rapides — Le Devoir et Les Affaires, jour 5, 2026"
       },
       "qs": {
         "value": 1,
@@ -940,8 +940,8 @@
       },
       "pq": {
         "value": 3,
-        "source": "Voit le rapatriement de pouvoirs comme insuffisant face à son objectif d'indépendance, sans le rejeter comme étape — position déduite",
-        "reliability": "inferred"
+        "reliability": "sourced",
+        "source": "Position à deux faces : le PQ réclame activement le rapatriement de pouvoirs (pleins pouvoirs en immigration et en culture, appui à un référendum sectoriel sur l'immigration, rétablissement d'un rapport de force avec Ottawa), mais Plamondon attaque l'étiquette « autonomiste » et présente le fédéralisme comme une impasse — La Presse, 4 sept. 2026, et Le Devoir, 2026"
       },
       "plq": {
         "value": 3,
@@ -1056,8 +1056,8 @@
       },
       "plq": {
         "value": 3,
-        "source": "Position générale pro-marché avec défense ponctuelle des sociétés d'État (Hydro-Québec) par son porte-parole énergie; pas de ligne explicite et récente — inféré",
-        "reliability": "inferred"
+        "reliability": "sourced",
+        "source": "Position à double mouvement : abolition d'environ 12 000 postes équivalents temps plein sur cinq ans (1,7 G$), mais aucune privatisation de société d'État annoncée et usage actif d'Investissement Québec comme levier de développement — Les Affaires, jour 14, et Noovo Info, 2026"
       },
       "qs": {
         "value": 5,

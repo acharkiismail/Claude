@@ -18,6 +18,7 @@ export default function LikertScale({ value, onChange }) {
               type="button"
               onClick={() => onChange(opt.value)}
               aria-pressed={selected}
+              aria-label={opt.label}
               className="flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-center transition-all sm:p-3"
               style={{
                 borderColor: selected ? opt.bg : "var(--hairline)",

@@ -1,3 +1,5 @@
+import meta from "../data/meta.json";
+
 export default function Intro({ onStart, statementCount, themeCount }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:py-16 sm:px-6">
@@ -70,15 +72,23 @@ export default function Intro({ onStart, statementCount, themeCount }) {
             Les positions des partis ont été établies à partir de leurs plateformes officielles
             2026 lorsqu'elles étaient disponibles, complétées par le bilan législatif (CAQ, PQ) et
             des déclarations publiques récentes des chefs. Chaque position affiche une source et
-            un badge de fiabilité — « Sourcé » (appuyé par une source directe) ou « Déduit »
-            (faute d'engagement chiffré trouvé, déduit de l'orientation générale du parti).
+            un badge de fiabilité — « Sourcé » (appuyé par une source directe), « Déduit » (déduit
+            d'un engagement connexe) ou « Non documenté ».
+          </p>
+          <p>
+            Une position non documentée est <strong className="text-[var(--ink)]">exclue du
+            calcul</strong> pour ce parti, plutôt que comptée comme un centrisme réel : sinon un
+            parti mal documenté se retrouve au centre de chaque échelle et paraît artificiellement
+            proche de tout le monde. Le classement indique combien de positions de chaque parti
+            sont documentées.
           </p>
           <p>
             L'affinité est calculée par une distance euclidienne pondérée entre vos réponses et
-            les positions de chaque parti; le profil par enjeu (façon « smartspider ») montre, en
-            plus du score global, où vous êtes proche ou loin de chaque parti thème par thème. Cet
-            outil est une simplification à visée pédagogique, pas un sondage scientifique ni un
-            outil de recommandation de vote.
+            les positions de chaque parti; le même calcul, appliqué thème par thème, donne votre
+            profil d'affinité par enjeu (façon « smartspider »). Un écart de moins de deux points
+            entre deux partis est signalé comme non significatif plutôt que tranché. Cet outil est
+            une simplification à visée pédagogique, pas un sondage scientifique ni un outil de
+            recommandation de vote.
           </p>
         </div>
       </details>
@@ -91,6 +101,11 @@ export default function Intro({ onStart, statementCount, themeCount }) {
       >
         Commencer →
       </button>
+
+      <p className="mt-8 text-xs text-[var(--ink-muted)]">
+        Positions des partis relevées le {meta.dataDateLabel}. La campagne étant en cours, elles
+        peuvent avoir évolué depuis.
+      </p>
     </div>
   );
 }

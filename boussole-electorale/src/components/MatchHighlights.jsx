@@ -31,11 +31,18 @@ export default function MatchHighlights({ party, highlights }) {
         <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--status-good)]">
           Où vous convergez le plus
         </h3>
-        <ul className="mt-3 space-y-2">
-          {agreements.map((item) => (
-            <StatementRow key={item.statement.id} item={item} party={party} />
-          ))}
-        </ul>
+        {agreements.length > 0 ? (
+          <ul className="mt-3 space-y-2">
+            {agreements.map((item) => (
+              <StatementRow key={item.statement.id} item={item} party={party} />
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm text-[var(--ink-secondary)]">
+            Aucune convergence nette — {party.shortName} arrive en tête par défaut, en étant
+            simplement moins éloigné de vous que les autres partis.
+          </p>
+        )}
       </div>
       <div>
         <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--disagree-strong)]">
