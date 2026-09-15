@@ -26,6 +26,16 @@
     <meta name="twitter:image" content="/og.png" />
   </head>
   <body>
+    <script>
+      // Appliqué avant le premier rendu : sinon la page clignote en clair puis
+      // bascule en sombre. Seule préférence conservée localement, rien n'est envoyé.
+      try {
+        var t = localStorage.getItem("repere-theme");
+        if (t === "dark" || t === "light") document.documentElement.dataset.theme = t;
+      } catch (e) {
+        /* stockage indisponible : on garde la préférence du système */
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

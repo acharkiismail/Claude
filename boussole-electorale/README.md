@@ -74,7 +74,17 @@ npm run build    # build de production dans dist/
   et qui abandonne ne partage pas.
 - Le résultat s'encode dans l'URL (un caractère par énoncé, un par thème). Un lien partagé
   reproduit exactement le résultat de son auteur et invite le visiteur à faire le sien. Aucun
-  serveur, aucun stockage, aucune donnée qui quitte le navigateur.
+  serveur, aucune analytique : les réponses vivent dans la mémoire de l'onglet, et comme elles
+  sont placées après un `#`, elles ne sont jamais transmises à l'hébergeur. Seule exception au
+  « rien n'est stocké » : le choix de thème clair/sombre, gardé en `localStorage`.
+- Thème clair/sombre : la préférence du système s'applique par défaut, un bouton dans l'en-tête
+  permet de forcer l'un ou l'autre. Le choix est appliqué avant le premier rendu par un script
+  en ligne, sinon la page clignote en clair avant de basculer.
+- Les sources renvoient vers une **recherche pré-remplie** plutôt que vers un lien profond. La
+  documentation s'est faite à travers des résumés de moteur de recherche, sans jamais pouvoir
+  ouvrir les articles : publier des URL non vérifiées sur un outil politique serait pire que pas
+  de lien, un lien mort ou qui pointe à côté décrédibilisant tout le reste. Une citation qui ne
+  nomme pas de média (« bilan CAQ », « dossier Northvolt ») reste en texte simple.
 - La carte de partage (1080×1080) est dessinée en canvas côté client, sur une palette claire
   figée pour que l'image ait la même allure quel que soit le thème de celui qui l'a produite.
 
@@ -83,16 +93,35 @@ npm run build    # build de production dans dist/
 | Parti | Sourcé | Déduit | Non documenté |
 |---|---|---|---|
 | CAQ | 29 | 1 | 0 |
-| PQ | 30 | 0 | 0 |
+| PQ | 29 | 1 | 0 |
 | PLQ | 24 | 2 | 4 |
-| QS | 29 | 1 | 0 |
-| PCQ | 29 | 0 | 1 |
+| QS | 28 | 2 | 0 |
+| PCQ | 27 | 0 | 3 |
 
-Les cinq positions « non documentées » ne sont pas des trous de collecte mais des absences
-de position publique : le PLQ n'avait pas publié de plateforme environnementale complète à la
-fin août 2026 (d'où l'absence de position sur les nouveaux barrages, la propriété
-d'Hydro-Québec et les mégaprojets industriels), et la plateforme du PCQ ne s'exprime pas sur
-la propriété d'Hydro-Québec.
+Les sept positions « non documentées » ne sont pas des trous de collecte mais des absences de
+position publique : le PLQ n'avait pas publié de plateforme environnementale complète à la fin
+août 2026 (d'où l'absence de position sur les nouveaux barrages, la propriété d'Hydro-Québec,
+les mégaprojets industriels et la cible de GES), et le PCQ ne s'exprime ni sur la propriété
+d'Hydro-Québec, ni sur l'arbitrage domicile-hébergement pour les aînés, ni sur le pacte fiscal
+municipal.
+
+## Redondance entre énoncés
+
+Une analyse de corrélation des vecteurs de positions montre que les 30 énoncés s'effondrent en
+une douzaine de dimensions indépendantes : sur presque toutes les questions, les cinq partis se
+rangent sur le même axe gauche-droite. **Ce n'est pas un défaut de formulation et ça ne se
+corrige pas** — c'est la structure du champ politique québécois à cinq partis, et les 38 thèses
+du Wahl-O-Mat donneraient le même résultat. La preuve : un énoncé entièrement neuf sur les soins
+aux aînés, ajouté après coup, corrèle immédiatement à −0,98 avec la question sur le privé en
+santé. Deux questions peuvent mesurer des choses très différentes **sur l'électeur** tout en
+n'ajoutant rien pour départager **les partis**.
+
+Ce qui est un vrai défaut, en revanche, c'est la duplication à l'intérieur d'un même thème — la
+même question posée deux fois à quelques écrans d'intervalle. Deux cas ont été retirés : un
+énoncé sur les délais d'attente en santé qui était un cas particulier d'un autre sur le privé
+(r = 1,00, vecteurs identiques), et un énoncé sur la bureaucratie qui reformulait celui sur le
+nombre de fonctionnaires (r = 0,96). Ils ont été remplacés par deux sujets absents du
+questionnaire : les soins à domicile aux aînés et les pouvoirs des municipalités.
 
 ## Limites connues
 
@@ -100,5 +129,7 @@ La campagne étant en cours, les positions évoluent — d'où la date de relev�
 l'application. Deux énoncés départagent faiblement les partis (le plein contrôle de
 l'immigration, sur lequel les cinq s'entendent, et les infrastructures scolaires) : ils sont
 conservés parce que le consensus est une information, et signalés comme tels dans les
-résultats. Cet outil est une simplification à visée pédagogique, pas un sondage scientifique
-ni un outil de recommandation de vote.
+résultats. Le transport — troisième lien, tramway, financement du transport collectif — est
+absent du questionnaire alors qu'il s'agit d'un des clivages les plus vifs de la décennie; il
+mériterait son propre thème. Cet outil est une simplification à visée pédagogique, pas un
+sondage scientifique ni un outil de recommandation de vote.

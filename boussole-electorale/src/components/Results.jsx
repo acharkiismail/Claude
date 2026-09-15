@@ -4,6 +4,7 @@ import CompassChart from "./CompassChart";
 import RadarChart from "./RadarChart";
 import MatchHighlights from "./MatchHighlights";
 import ReliabilityBadge from "./ReliabilityBadge";
+import SourceLine from "./SourceLine";
 import meta from "../data/meta.json";
 import { partyColor } from "../lib/colors";
 import {
@@ -334,7 +335,7 @@ export default function Results({
                                   </span>
                                   <ReliabilityBadge reliability={pos.reliability} />
                                 </span>
-                                <span className="text-[var(--ink-muted)]">{pos.source}</span>
+                                <SourceLine source={pos.source} citation={pos.citation} />
                               </li>
                             );
                           })}

@@ -1,4 +1,5 @@
 import CompassMark from "./CompassMark";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Header({ stepIndex, stepCount }) {
   return (
@@ -10,19 +11,22 @@ export default function Header({ stepIndex, stepCount }) {
             Repère <span style={{ color: "var(--accent)" }}>2026</span>
           </span>
         </div>
-        {stepIndex != null && (
-          <div className="flex items-center gap-1.5">
-            {Array.from({ length: stepCount }).map((_, i) => (
-              <span
-                key={i}
-                className="h-1.5 w-5 rounded-full transition-colors"
-                style={{
-                  backgroundColor: i <= stepIndex ? "var(--accent)" : "var(--hairline)",
-                }}
-              />
-            ))}
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {stepIndex != null && (
+            <div className="flex items-center gap-1.5">
+              {Array.from({ length: stepCount }).map((_, i) => (
+                <span
+                  key={i}
+                  className="h-1.5 w-5 rounded-full transition-colors"
+                  style={{
+                    backgroundColor: i <= stepIndex ? "var(--accent)" : "var(--hairline)",
+                  }}
+                />
+              ))}
+            </div>
+          )}
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );
