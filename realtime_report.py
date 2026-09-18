@@ -204,15 +204,21 @@ def merge_into_master(master_path: str, new_rows: list, key_col: str):
 
     merged = [by_key[k] for k in ordered_keys] + unkeyed
 
+    # last_merge_utc sert à last_merge_since.py : il en déduit depuis quand interroger
+    # la file au prochain cycle, pour que la fenêtre se rattrape d'elle-même après une panne.
+    today = today_toronto_str()
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
     # Sauvegarde de l'état précédent avant réécriture : si l'écriture du maître est
     # interrompue (coupure réseau, process tué), la journée reste récupérable.
     if master_rows:
         safe_write(master_path + ".bak",
-                   json.dumps({"date": today_toronto_str(), "rows": master_rows},
+                   json.dumps({"date": today, "last_merge_utc": stamp, "rows": master_rows},
                               ensure_ascii=False))
 
     safe_write(master_path,
-               json.dumps({"date": today_toronto_str(), "rows": merged}, ensure_ascii=False))
+               json.dumps({"date": today, "last_merge_utc": stamp, "rows": merged},
+                          ensure_ascii=False))
     return merged
 
 
