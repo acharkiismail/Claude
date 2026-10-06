@@ -172,11 +172,11 @@ def load_master(master_path: str):
     bak_rows, bak_ok = _read_master_file(master_path + ".bak")
     if bak_ok and bak_rows:
         print(f"WARNING: {master_path} illisible — reprise depuis la sauvegarde "
-              f"({len(bak_rows)} ligne(s))", file=sys.stderr)
+              f"({len(bak_rows)} ligne(s))")
         return bak_rows
 
     print(f"WARNING: {master_path} illisible et aucune sauvegarde exploitable — "
-          f"la journée repart à vide", file=sys.stderr)
+          f"la journée repart à vide")
     return []
 
 
@@ -214,7 +214,7 @@ def merge_into_master(master_path: str, new_rows: list, key_col: str):
                                   ensure_ascii=False))
         except OSError as e:
             print(f"WARNING: sauvegarde {master_path}.bak non écrite "
-                  f"({type(e).__name__}) — on continue", file=sys.stderr)
+                  f"({type(e).__name__}) — on continue")
 
     # Le maître n'est qu'un cache d'accumulation : ne pas réussir à l'écrire ne doit
     # ni empêcher la génération du rapport, ni faire échouer l'appel côté Blue Prism.
@@ -224,8 +224,7 @@ def merge_into_master(master_path: str, new_rows: list, key_col: str):
                               ensure_ascii=False))
     except OSError as e:
         print(f"WARNING: maître {master_path} non sauvegardé ({type(e).__name__}: {e}) — "
-              f"rapport généré quand même, le lot sera refusionné au prochain cycle",
-              file=sys.stderr)
+              f"rapport généré quand même, le lot sera refusionné au prochain cycle")
         return merged, False
 
     return merged, True
@@ -373,7 +372,7 @@ def sort_rows_in_python(rows, sort_col: str, desc: bool,
     if sort_col and not col_has_data:
         print(f"WARNING: --sort_col '{sort_col}' ne correspond à aucune colonne des données "
               f"(ni à la colonne calculée '{LAST_UPDATE_COL}') — aucun tri appliqué, "
-              f"les lignes restent dans leur ordre d'arrivée.", file=sys.stderr)
+              f"les lignes restent dans leur ordre d'arrivée.")
 
     if sort_col and col_has_data:
         rows_with, rows_empty = [], []
@@ -896,7 +895,7 @@ def run_build(input_json, output_html, title, sort_col, sort_desc,
             # journée, donc le rapport reste générable. Le lot est gardé pour plus tard.
             print(f"WARNING: lot {input_json} illisible ({type(e).__name__}: {e}) — "
                   f"rapport régénéré depuis le maître seul, lot conservé "
-                  f"pour le prochain cycle", file=sys.stderr)
+                  f"pour le prochain cycle")
             rows = []
             input_ok = False
     else:
@@ -932,7 +931,7 @@ def run_build(input_json, output_html, title, sort_col, sort_desc,
         report_ok = True
     except OSError as e:
         print(f"WARNING: rapport {output_html} non écrit ({type(e).__name__}: {e}) — "
-              f"nouvelle tentative au prochain cycle", file=sys.stderr)
+              f"nouvelle tentative au prochain cycle")
         report_ok = False
 
     # Les fichiers d'entrée ne sont consommés que si les données sont bien stockées
@@ -982,7 +981,7 @@ def main():
             print(f"SUCCESS: HTML generated -> {args.output_html}")
         else:
             print(f"SUCCESS: run completed, HTML not written this cycle "
-                  f"(see WARNING on stderr) -> {args.output_html}")
+                  f"(see WARNING above) -> {args.output_html}")
         sys.exit(0)
 
     except Exception as e:
