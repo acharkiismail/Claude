@@ -182,8 +182,9 @@ def load_master(master_path: str):
 
 def merge_into_master(master_path: str, new_rows: list, key_col: str):
     """Upsert new_rows (lot incrémental, ex. dernière heure) dans le fichier maître
-    (journée complète) en se basant sur key_col, puis persiste et renvoie le résultat.
-    Les lignes sans key_col renseigné sont conservées telles quelles, sans dédoublonnage."""
+    (journée complète) en se basant sur key_col, puis persiste et renvoie
+    (lignes_fusionnées, persisté). Les lignes sans key_col renseigné sont conservées
+    telles quelles, sans dédoublonnage."""
     master_rows = load_master(master_path)
 
     by_key = {}
@@ -207,13 +208,27 @@ def merge_into_master(master_path: str, new_rows: list, key_col: str):
     # Sauvegarde de l'état précédent avant réécriture : si l'écriture du maître est
     # interrompue (coupure réseau, process tué), la journée reste récupérable.
     if master_rows:
-        safe_write(master_path + ".bak",
-                   json.dumps({"date": today_toronto_str(), "rows": master_rows},
-                              ensure_ascii=False))
+        try:
+            safe_write(master_path + ".bak",
+                       json.dumps({"date": today_toronto_str(), "rows": master_rows},
+                                  ensure_ascii=False))
+        except OSError as e:
+            print(f"WARNING: sauvegarde {master_path}.bak non écrite "
+                  f"({type(e).__name__}) — on continue", file=sys.stderr)
 
-    safe_write(master_path,
-               json.dumps({"date": today_toronto_str(), "rows": merged}, ensure_ascii=False))
-    return merged
+    # Le maître n'est qu'un cache d'accumulation : ne pas réussir à l'écrire ne doit
+    # ni empêcher la génération du rapport, ni faire échouer l'appel côté Blue Prism.
+    try:
+        safe_write(master_path,
+                   json.dumps({"date": today_toronto_str(), "rows": merged},
+                              ensure_ascii=False))
+    except OSError as e:
+        print(f"WARNING: maître {master_path} non sauvegardé ({type(e).__name__}: {e}) — "
+              f"rapport généré quand même, le lot sera refusionné au prochain cycle",
+              file=sys.stderr)
+        return merged, False
+
+    return merged, True
 
 
 # ============================================================
@@ -868,15 +883,29 @@ def build_html_table(rows, cols, title, default_sort_col, default_sort_desc,
 def run_build(input_json, output_html, title, sort_col, sort_desc,
               exception_col, completed_col, locks_json,
               master_json="", key_col=""):
+    input_ok = True
     if master_json and not os.path.exists(input_json):
         # En mode incrémental, une période sans aucun cas modifié est normale :
         # le rapport est régénéré à partir du maître seul.
         rows = []
+    elif master_json:
+        try:
+            rows = read_rows(input_json)
+        except OSError as e:
+            # Lot verrouillé par l'antivirus : le maître contient déjà le reste de la
+            # journée, donc le rapport reste générable. Le lot est gardé pour plus tard.
+            print(f"WARNING: lot {input_json} illisible ({type(e).__name__}: {e}) — "
+                  f"rapport régénéré depuis le maître seul, lot conservé "
+                  f"pour le prochain cycle", file=sys.stderr)
+            rows = []
+            input_ok = False
     else:
         rows = read_rows(input_json)
 
     if master_json:
-        rows = merge_into_master(master_json, rows, key_col)
+        rows, master_ok = merge_into_master(master_json, rows, key_col)
+    else:
+        master_ok = True
 
     locked_set = read_locked_set(locks_json)
     rows       = sort_rows_in_python(rows, sort_col, sort_desc,
@@ -895,9 +924,25 @@ def run_build(input_json, output_html, title, sort_col, sort_desc,
             locked_set=locked_set,
         )
 
-    safe_write(output_html, html)
-    try_delete_file(input_json)
-    try_delete_file(locks_json)
+    # Un verrou transitoire sur le partage réseau est une condition attendue, pas une
+    # panne : le cycle suivant réécrira. Un générateur de tableau de bord ne doit
+    # jamais interrompre une session Blue Prism de production.
+    try:
+        safe_write(output_html, html)
+        report_ok = True
+    except OSError as e:
+        print(f"WARNING: rapport {output_html} non écrit ({type(e).__name__}: {e}) — "
+              f"nouvelle tentative au prochain cycle", file=sys.stderr)
+        report_ok = False
+
+    # Les fichiers d'entrée ne sont consommés que si les données sont bien stockées
+    # ailleurs : dans le maître, ou à défaut dans le rapport lui-même.
+    stored = master_ok if master_json else report_ok
+    if stored and input_ok:
+        try_delete_file(input_json)
+        try_delete_file(locks_json)
+
+    return report_ok
 
 
 def main():
@@ -921,7 +966,7 @@ def main():
         sys.exit(1)
 
     try:
-        run_build(
+        report_ok = run_build(
             input_json=args.input_json,
             output_html=args.output_html,
             title=args.title,
@@ -933,7 +978,11 @@ def main():
             master_json=args.master_json,
             key_col=args.key_col,
         )
-        print(f"SUCCESS: HTML generated -> {args.output_html}")
+        if report_ok:
+            print(f"SUCCESS: HTML generated -> {args.output_html}")
+        else:
+            print(f"SUCCESS: run completed, HTML not written this cycle "
+                  f"(see WARNING on stderr) -> {args.output_html}")
         sys.exit(0)
 
     except Exception as e:
